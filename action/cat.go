@@ -15,8 +15,8 @@ type cat struct {
 
 type postProperty struct {
 	esa.PostResponse
-	local_path string
-	locked bool
+	LocalPath string `json:"local_path"`
+	Locked bool `json:"locked"`
 }
 
 func init() {
@@ -42,8 +42,8 @@ func (self *cat) Do(args []string) error {
 		var post postProperty
 		if err := json.Unmarshal(bytes, &post); err != nil { return err }
 		
-		post.local_path = GetLocalPostPath(post.Category, post.Number, "md")
-		post.locked		= util.Exists(GetLocalPostPath(post.Category, post.Number, "lock"))
+		post.LocalPath	= GetLocalPostPath(post.Category, post.Number, "md")
+		post.Locked		= util.Exists(GetLocalPostPath(post.Category, post.Number, "lock"))
 
 		json_bytes, _ := json.MarshalIndent(post, "", "\t")
 		
