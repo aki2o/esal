@@ -1,13 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"bufio"
-	"strings"
-	"flag"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
+	"github.com/aki2o/esa-cui/util"
 	"github.com/aki2o/esa-cui/action"
 	"github.com/aki2o/esa-cui/config"
 )
@@ -35,44 +32,23 @@ func main() {
 				config.Load(team)
 				
 				if err := action.SetupContext(team, access_token); err != nil { panic(err) }
-				
-				for {
-					fmt.Print("> ")
-					
-					scanner := bufio.NewScanner(os.Stdin)
-					scanner.Scan()
-					
-					input_tokens := strings.Fields(scanner.Text())
-					if len(input_tokens) == 0 { continue }
-					
-					command_name	:= input_tokens[0]
-					processor		:= action.NewProcessor(command_name)
-					if processor == nil {
-						log.WithFields(log.Fields{ "command": command_name }).Debug("unknown command")
-						os.Stderr.Write([]byte("Unknown command!\n"))
-						continue
-					}
-					
-					flagset := flag.NewFlagSet("action", flag.PanicOnError)
-					processor.SetOption(flagset)
-					
-					err := flagset.Parse(input_tokens[1:])
-					if err != nil {
-						action.PutError(err)
-						continue
-					}
-					
-					err = processor.Do(flagset.Args())
-					if err != nil {
-						action.PutError(err)
-						continue
-					}
-				}
+
+				util.ProcessInteractive("action", action.NewProcessor)
+
+				return nil
 			},
 		},
 		{
 			Name: "config",
+			Usage: "configure.",
 			Action: func(c *cli.Context) error {
+				team := c.Args().First()
+				
+				config.Load(team)
+				
+				util.ProcessInteractive("config", config.NewProcessor)
+
+				return nil
 			},
 		},
 	}

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	log "github.com/sirupsen/logrus"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type ls struct {}
@@ -18,7 +19,7 @@ func (self *ls) SetOption(flagset *flag.FlagSet) {
 }
 
 func (self *ls) Do(args []string) error {
-	for _, node := range GetNodes(Context.Cwd) {
+	for _, node := range util.GetNodes(Context.Cwd) {
 		node_path := filepath.Join(Context.Cwd, node.Name())
 		
 		if node.IsDir() {

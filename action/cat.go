@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"github.com/upamune/go-esa/esa"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type cat struct {
@@ -32,7 +33,7 @@ func (self *cat) Do(args []string) error {
 	if len(args) > 0 { post_number = args[0] }
 	
 	if post_number == "" {
-		return errors.New("Require post number")
+		return errors.New("Require post number!")
 	}
 
 	var bytes []byte
@@ -43,7 +44,7 @@ func (self *cat) Do(args []string) error {
 		if err := json.Unmarshal(bytes, &post); err != nil { return err }
 		
 		post.local_path = GetLocalPostPath(post.FullName, post.Number, "md")
-		post.locked		= Exists(GetLocalPostPath(post.FullName, post.Number, "lock"))
+		post.locked		= util.Exists(GetLocalPostPath(post.FullName, post.Number, "lock"))
 
 		bytes, _ = json.MarshalIndent(post, "", "\t")
 	} else {

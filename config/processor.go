@@ -1,4 +1,4 @@
-package action
+package config
 
 import (
 	"github.com/aki2o/esa-cui/util"

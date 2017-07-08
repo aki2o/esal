@@ -6,15 +6,19 @@ import (
 	"bufio"
 	"path/filepath"
 	"encoding/json"
+	"time"
 	"github.com/aki2o/esa-cui/util"
 )
 
+type QueryEntry struct {
+	Key string `json:"key"`
+	Value string `json:"value"`
+}
+
 type Query struct {
 	Name string `json:"name"`
-	Entries []struct {
-		Key string `json:"key"`
-		Value string `json:"value"`
-	} `json:"entries"`
+	Entries []QueryEntry `json:"entries"`
+	SynchronizedAt time.Time `json:"synchronized_at"`
 }
 
 type TeamConfig struct {
@@ -38,7 +42,7 @@ func Load(team string) {
 		return
 	}
 
-	Current = &TeamConfig{}
+	Current = &TeamConfig{ Name: team }
 }
 
 func Save() {
