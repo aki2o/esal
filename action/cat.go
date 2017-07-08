@@ -36,21 +36,22 @@ func (self *cat) Do(args []string) error {
 		return errors.New("Require post number!")
 	}
 
-	var bytes []byte
 	if self.json_format {
-		bytes = LoadPostData(Context.Cwd, post_number, "json")
+		bytes := LoadPostData(Context.Cwd, post_number, "json")
 
 		var post postProperty
 		if err := json.Unmarshal(bytes, &post); err != nil { return err }
 		
-		post.local_path = GetLocalPostPath(post.FullName, post.Number, "md")
-		post.locked		= util.Exists(GetLocalPostPath(post.FullName, post.Number, "lock"))
+		post.local_path = GetLocalPostPath(post.Category, post.Number, "md")
+		post.locked		= util.Exists(GetLocalPostPath(post.Category, post.Number, "lock"))
 
-		bytes, _ = json.MarshalIndent(post, "", "\t")
+		json_bytes, _ := json.MarshalIndent(post, "", "\t")
+		
+		fmt.Println(string(json_bytes))
 	} else {
-		bytes = LoadPostData(Context.Cwd, post_number, "md")
+		bytes := LoadPostData(Context.Cwd, post_number, "md")
+		
+		fmt.Println(string(bytes))
 	}
-	fmt.Println(string(bytes))
-	
 	return nil
 }

@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"encoding/json"
 	log "github.com/sirupsen/logrus"
+	"github.com/upamune/go-esa/esa"
 	"github.com/aki2o/esa-cui/util"
 )
 
@@ -24,14 +26,22 @@ func (self *ls) Do(args []string) error {
 		
 		if node.IsDir() {
 			fmt.Println(node.Name()+"/")
-		} else if filepath.Ext(node_path) == ".md" {
-			node_name_parts := strings.Split(node.Name(), ".")
-			post_number		:= node_name_parts[len(node_name_parts) - 2]
-			
-			fmt.Printf("%s: %s\n", post_number, strings.Join(node_name_parts[0:len(node_name_parts) - 2], "."))
-		} else if filepath.Ext(node_path) == ".json" {
 		} else {
-			log.WithFields(log.Fields{ "name": node.Name(), "path": node_path }).Error("Unknown node")
+			node_name_parts := strings.Split(node.Name(), ".")
+			if len(node_name_parts) == 2 {
+				post_number := node_name_parts[0]
+				post_data_type := node_name_parts[1]
+				if post_data_type == "json" {
+					bytes := LoadPostData(Context.Cwd, post_number, "json")
+
+					var post esa.PostResponse
+					if err := json.Unmarshal(bytes, &post); err != nil { return err }
+
+					fmt.Printf("%s: %s\n", post_number, post.Name)
+				}
+			} else {
+				log.WithFields(log.Fields{ "name": node.Name(), "path": node_path }).Error("Unknown node")
+			}
 		}
 	}
 	
