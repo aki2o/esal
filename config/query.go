@@ -35,7 +35,7 @@ func (self *query) Do(args []string) error {
 }
 
 func listQuery() error {
-	for _, query := range Current.Queries {
+	for _, query := range Team.Queries {
 		bytes, err := json.MarshalIndent(query, "", "\t")
 		if err != nil { return err }
 
@@ -73,7 +73,7 @@ func addQuery() error {
 		query.Entries = append(query.Entries, *entry)
 	}
 
-	Current.Queries = append(Current.Queries, *query)
+	Team.Queries = append(Team.Queries, *query)
 	Save()
 	return nil
 }
@@ -86,7 +86,7 @@ func removeQuery() error {
 	next_index := index + 1
 	if index < 0 { return errors.New("Not found query of '"+name+"'!") }
 	
-	Current.Queries = append(Current.Queries[:index], Current.Queries[next_index:]...)
+	Team.Queries = append(Team.Queries[:index], Team.Queries[next_index:]...)
 	Save()
 	return nil
 }
@@ -119,7 +119,7 @@ func scanValue() string {
 }
 
 func indexQuery(name string) int {
-	for index, query := range Current.Queries {
+	for index, query := range Team.Queries {
 		if query.Name != name { continue }
 
 		return index

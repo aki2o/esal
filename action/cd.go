@@ -4,10 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"flag"
-	"path/filepath"
 	"os"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/exp/utf8string"
 )
 
 type cd struct {}
@@ -28,12 +26,7 @@ func (self *cd) Do(args []string) error {
 		return errors.New("Require path")
 	}
 
-	var next_path string
-	if utf8string.NewString(path).Slice(0, 1) == "/" {
-		next_path = filepath.Join(Context.Root(), path)
-	} else {
-		next_path = filepath.Join(Context.Cwd, path)
-	}
+	next_path := AbsolutePathOf(path)
 
 	info, err := os.Stat(next_path)
 	if err != nil { return err }

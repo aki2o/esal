@@ -30,34 +30,36 @@ type Config struct {
 	Teams []TeamConfig `json:"teams"`
 }
 
-var config_path string = filepath.Join(os.Getenv("HOME"), ".esa", "config.json")
+var config_path string = filepath.Join(util.LocalRootPath(), "config.json")
 
-var Current *TeamConfig
+var Global *Config
+var Team *TeamConfig
 
 func Load(team string) {
-	for _, team_config := range loadConfig().Teams {
+	Global = loadConfig()
+	
+	for _, team_config := range Global.Teams {
 		if team_config.Name != team { continue }
 
-		Current = &team_config
+		Team = &team_config
 		return
 	}
 
-	Current = &TeamConfig{ Name: team }
+	Team = &TeamConfig{ Name: team }
 }
 
 func Save() {
-	config := &Config{}
-	teams := []TeamConfig{}
-
-	teams = append(teams, *Current)
-	for _, team_config := range loadConfig().Teams {
-		if team_config.Name == Current.Name { continue }
-
-		teams = append(teams, team_config)
+	teams := make([]TeamConfig, len(Global.Teams))
+	for index, team_config := range Global.Teams {
+		if team_config.Name == Team.Name {
+			teams[index] = *Team
+		} else {
+			teams[index] = team_config
+		}
 	}
-	config.Teams = teams
+	Global.Teams = teams
 	
-	bytes, err := json.MarshalIndent(config, "", "\t")
+	bytes, err := json.MarshalIndent(Global, "", "\t")
 	if err != nil { panic(err) }
 	fp, err := os.Create(config_path)
 	if err != nil { panic(err) }
@@ -68,7 +70,9 @@ func Save() {
 }
 
 func loadConfig() *Config {
-	if ! util.Exists(config_path) { return &Config{} }
+	if ! util.Exists(config_path) {
+		return &Config{}
+	}
 
 	var config Config
 	bytes, err := ioutil.ReadFile(config_path)

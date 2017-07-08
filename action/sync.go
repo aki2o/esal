@@ -20,9 +20,9 @@ func (self *sync) SetOption(flagset *flag.FlagSet) {
 }
 
 func (self *sync) Do(args []string) error {
-	query_configs := make([]config.Query, len(config.Current.Queries))
+	query_configs := make([]config.Query, len(config.Team.Queries))
 	
-	for index, query_config := range config.Current.Queries {
+	for index, query_config := range config.Team.Queries {
 		fetched_count	:= 0
 		total_count		:= 1
 		page_index		:= 1
@@ -62,7 +62,7 @@ func (self *sync) Do(args []string) error {
 		query_configs[index] = query_config
 	}
 
-	config.Current.Queries = query_configs
+	config.Team.Queries = query_configs
 	config.Save()
 	return nil
 }

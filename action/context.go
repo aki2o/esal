@@ -2,10 +2,10 @@ package action
 
 import (
 	"errors"
-	"os"
 	"path/filepath"
 	log "github.com/sirupsen/logrus"
 	"github.com/upamune/go-esa/esa"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type EsaCuiActionContext struct {
@@ -28,7 +28,7 @@ func SetupContext(team string, access_token string) error {
 		return errors.New("Invalid Team!")
 	}
 	
-	Context.local_strage_path	= filepath.Join(os.Getenv("HOME"), ".esa", "posts")
+	Context.local_strage_path	= filepath.Join(util.LocalRootPath(), "posts")
 	Context.Team				= team
 	Context.Cwd					= Context.Root()
 	Context.Client				= esa.NewClient(access_token)

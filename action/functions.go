@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"bufio"
 	"encoding/json"
+	"path/filepath"
+	"golang.org/x/exp/utf8string"
 	log "github.com/sirupsen/logrus"
 	"github.com/upamune/go-esa/esa"
 	"github.com/aki2o/esa-cui/util"
@@ -52,4 +54,12 @@ func LoadPostData(path string, number_as_string string, extension string) []byte
 	if err != nil { panic(err) }
 
 	return bytes
+}
+
+func AbsolutePathOf(path string) string {
+	if utf8string.NewString(path).Slice(0, 1) == "/" {
+		return filepath.Join(Context.Root(), path)
+	} else {
+		return filepath.Join(Context.Cwd, path)
+	}
 }

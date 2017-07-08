@@ -7,8 +7,13 @@ import (
 	"fmt"
 	"strings"
 	"flag"
+	"path/filepath"
 	log "github.com/sirupsen/logrus"
 )
+
+func LocalRootPath() string {
+	return filepath.Join(os.Getenv("HOME"), ".esa")
+}
 
 func PutError(err error) {
 	log.Error(err.Error())
