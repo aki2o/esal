@@ -57,7 +57,9 @@ func LoadPostData(path string, number_as_string string, extension string) []byte
 }
 
 func AbsolutePathOf(path string) string {
-	if utf8string.NewString(path).Slice(0, 1) == "/" {
+	if path == "" {
+		return Context.Cwd
+	} else if utf8string.NewString(path).Slice(0, 1) == "/" {
 		return filepath.Join(Context.Root(), path)
 	} else {
 		return filepath.Join(Context.Cwd, path)
