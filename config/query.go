@@ -27,14 +27,14 @@ func (self *query) Do(args []string) error {
 	if len(args) > 0 { action_name = args[0] }
 
 	switch action_name {
-	case "list":	return listQuery()
+	case "list":	return printQuery()
 	case "add":		return addQuery()
 	case "remove":	return removeQuery()
 	default:		return errors.New("Unknown action!")
 	}
 }
 
-func listQuery() error {
+func printQuery() error {
 	for _, query := range Team.Queries {
 		bytes, err := json.MarshalIndent(query, "", "\t")
 		if err != nil { return err }
