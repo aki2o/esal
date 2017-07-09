@@ -19,7 +19,6 @@ func (self *cd) SetOption(flagset *flag.FlagSet) {
 
 func (self *cd) Do(args []string) error {
 	var path string = ""
-
 	if len(args) > 0 { path = args[0] }
 
 	if path == "" {
