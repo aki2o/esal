@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"path/filepath"
+	"regexp"
 	"golang.org/x/exp/utf8string"
 	log "github.com/sirupsen/logrus"
 	"github.com/upamune/go-esa/esa"
@@ -64,4 +65,14 @@ func AbsolutePathOf(path string) string {
 	} else {
 		return filepath.Join(Context.Cwd, path)
 	}
+}
+
+func DirectoryPathAndPostNumberOf(path string) (string, string) {
+	re, _ := regexp.Compile("/?([0-9]*)$")
+	matches := re.FindStringSubmatch(path)
+	
+	var post_number string = ""
+	if len(matches) > 1 { post_number = matches[1] }
+	
+	return re.ReplaceAllString(path, ""), post_number
 }
