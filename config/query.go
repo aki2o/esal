@@ -15,7 +15,7 @@ import(
 type query struct {}
 
 func init() {
-	processors["query"] = &query{}
+	addProcessor(&query{}, "query", "Configure query.")
 }
 
 func (self *query) SetOption(flagset *flag.FlagSet) {

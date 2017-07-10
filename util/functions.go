@@ -4,7 +4,6 @@ import (
 	"os"
 	"io/ioutil"
 	"bufio"
-	"flag"
 	"path/filepath"
 	log "github.com/sirupsen/logrus"
 	"github.com/abiosoft/ishell"
@@ -61,26 +60,19 @@ func ProcessInteractive(name string, repo *ProcessorRepository) {
 	shell := ishell.New()
 
 	for _, processor_name := range repo.ProcessorNames() {
-		processor := repo.GetProcessor(processor_name)
+		processor	:= repo.GetProcessor(processor_name)
+		usage		:= repo.GetUsage(processor_name)
+
+		adapter := &ishellAdapter{
+			processor: processor,
+			processor_name: processor_name,
+			processor_usage: usage,
+		}
 		
 		shell.AddCmd(&ishell.Cmd{
 			Name: processor_name,
-			Func: func (c *ishell.Context) {
-				flagset := flag.NewFlagSet(name, flag.PanicOnError)
-				processor.SetOption(flagset)
-				
-				err := flagset.Parse(c.Args)
-				if err != nil {
-					PutError(err)
-					return
-				}
-				
-				err = processor.Do(flagset.Args())
-				if err != nil {
-					PutError(err)
-					return
-				}
-			},
+			Help: usage,
+			Func: adapter.adapt,
 		})
 	}
 

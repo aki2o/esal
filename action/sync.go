@@ -13,7 +13,7 @@ import (
 type sync struct {}
 
 func init() {
-	processors["sync"] = &sync{}
+	addProcessor(&sync{}, "sync", "Fetch posts.")
 }
 
 func (self *sync) SetOption(flagset *flag.FlagSet) {

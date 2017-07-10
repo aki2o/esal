@@ -8,7 +8,7 @@ import (
 type pwd struct {}
 
 func init() {
-	processors["pwd"] = &pwd{}
+	addProcessor(&pwd{}, "pwd", "Print current work category.")
 }
 
 func (self *pwd) SetOption(flagset *flag.FlagSet) {

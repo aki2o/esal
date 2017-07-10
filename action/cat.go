@@ -20,7 +20,7 @@ type postProperty struct {
 }
 
 func init() {
-	processors["cat"] = &cat{}
+	addProcessor(&cat{}, "cat", "Print a post body text as markdown.")
 }
 
 func (self *cat) SetOption(flagset *flag.FlagSet) {

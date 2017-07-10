@@ -10,7 +10,7 @@ import (
 type ag struct {}
 
 func init() {
-	processors["ag"] = &ag{}
+	addProcessor(&ag{}, "ag", "Execute ag command.")
 }
 
 func (self *ag) SetOption(flagset *flag.FlagSet) {

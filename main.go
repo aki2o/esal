@@ -33,7 +33,7 @@ func main() {
 				
 				if err := action.SetupContext(team, access_token); err != nil { panic(err) }
 
-				util.ProcessInteractive("action", action.NewProcessorRepository())
+				util.ProcessInteractive("action", action.ProcessorRepository())
 
 				return nil
 			},
@@ -46,7 +46,7 @@ func main() {
 				
 				config.Load(team)
 				
-				util.ProcessInteractive("config", config.NewProcessorRepository())
+				util.ProcessInteractive("config", config.ProcessorRepository())
 
 				return nil
 			},

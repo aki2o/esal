@@ -14,7 +14,7 @@ import (
 type save struct {}
 
 func init() {
-	processors["save"] = &save{}
+	addProcessor(&save{}, "save", "Upload a post.")
 }
 
 func (self *save) SetOption(flagset *flag.FlagSet) {

@@ -13,7 +13,7 @@ type cd struct {
 }
 
 func init() {
-	processors["cd"] = &cd{}
+	addProcessor(&cd{}, "cd", "Change working category.")
 }
 
 func (self *cd) SetOption(flagset *flag.FlagSet) {

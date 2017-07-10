@@ -11,7 +11,7 @@ import (
 type lock struct {}
 
 func init() {
-	processors["lock"] = &lock{}
+	addProcessor(&lock{}, "lock", "Start to guard a post from updated by SYNC.")
 }
 
 func (self *lock) SetOption(flagset *flag.FlagSet) {

@@ -4,14 +4,15 @@ import (
 	"github.com/aki2o/esa-cui/util"
 )
 
-var processors = make(map[string]util.Processable)
+var repo *util.ProcessorRepository
 
-func NewProcessorRepository() *util.ProcessorRepository {
-	repo := &util.ProcessorRepository{}
-
-	for name, processor := range processors {
-		repo.SetProcessor(name, processor)
-	}
-	
+func ProcessorRepository() *util.ProcessorRepository {
 	return repo
+}
+
+func addProcessor(processor util.Processable, name string, usage string) {
+	if repo == nil { repo = &util.ProcessorRepository{} }
+	
+	repo.SetProcessor(name, processor)
+	repo.SetUsage(name, usage)
 }

@@ -21,7 +21,7 @@ type ls struct {
 }
 
 func init() {
-	processors["ls"] = &ls{ writer: os.Stdout }
+	addProcessor(&ls{ writer: os.Stdout }, "ls", "Print a list of category and post information.")
 }
 
 func (self *ls) SetOption(flagset *flag.FlagSet) {
