@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os/exec"
 	"fmt"
-	// "regexp"
+	"regexp"
 )
 
 type ag struct {}
@@ -23,8 +23,7 @@ func (self *ag) Do(args []string) error {
 	out, err := exec.Command("ag", cmd_args...).Output()
 	if err != nil { return err }
 
-	// local_root_re, _ := regexp.Compile("(?m)^"+Context.Root())
-	// fmt.Print(local_root_re.ReplaceAllString(string(out), ""))
-	fmt.Print(string(out))
+	local_root_re, _ := regexp.Compile("(?m)^"+Context.Root())
+	fmt.Print(local_root_re.ReplaceAllString(string(out), ""))
 	return nil
 }
