@@ -4,11 +4,10 @@ import (
 	"os"
 	"io/ioutil"
 	"bufio"
-	"fmt"
-	"strings"
 	"flag"
 	"path/filepath"
 	log "github.com/sirupsen/logrus"
+	"github.com/abiosoft/ishell"
 )
 
 func LocalRootPath() string {
@@ -58,43 +57,32 @@ func Readln(r *bufio.Reader) (string, error) {
     return string(ln), err
 }
 
-func ProcessInteractive(name string, processor_generator func(string) Processable) {
-	for {
-		fmt.Print("> ")
-		
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-		
-		input_tokens := strings.Fields(scanner.Text())
-		if len(input_tokens) == 0 { continue }
+func ProcessInteractive(name string, repo *ProcessorRepository) {
+	shell := ishell.New()
 
-		command_name := input_tokens[0]
-
-		if command_name == "exit" || command_name == "quit" {
-			os.Exit(0)
-			return
-		}
+	for _, processor_name := range repo.ProcessorNames() {
+		processor := repo.GetProcessor(processor_name)
 		
-		processor := processor_generator(command_name)
-		if processor == nil {
-			log.WithFields(log.Fields{ "command": command_name }).Debug("unknown command")
-			os.Stderr.Write([]byte("Unknown command!\n"))
-			continue
-		}
-		
-		flagset := flag.NewFlagSet(name, flag.PanicOnError)
-		processor.SetOption(flagset)
-		
-		err := flagset.Parse(input_tokens[1:])
-		if err != nil {
-			PutError(err)
-			continue
-		}
-		
-		err = processor.Do(flagset.Args())
-		if err != nil {
-			PutError(err)
-			continue
-		}
+		shell.AddCmd(&ishell.Cmd{
+			Name: processor_name,
+			Func: func (c *ishell.Context) {
+				flagset := flag.NewFlagSet(name, flag.PanicOnError)
+				processor.SetOption(flagset)
+				
+				err := flagset.Parse(c.Args)
+				if err != nil {
+					PutError(err)
+					return
+				}
+				
+				err = processor.Do(flagset.Args())
+				if err != nil {
+					PutError(err)
+					return
+				}
+			},
+		})
 	}
+
+	shell.Run()
 }
