@@ -6,17 +6,21 @@ import (
 	"path/filepath"
 	"strings"
 	"encoding/json"
+	"io"
+	"bufio"
+	"os"
 	log "github.com/sirupsen/logrus"
 	"github.com/upamune/go-esa/esa"
 	"github.com/aki2o/esa-cui/util"
 )
 
 type ls struct {
+	writer io.Writer
 	recursive bool
 }
 
 func init() {
-	processors["ls"] = &ls{}
+	processors["ls"] = &ls{ writer: os.Stdout }
 }
 
 func (self *ls) SetOption(flagset *flag.FlagSet) {
@@ -32,12 +36,15 @@ func (self *ls) Do(args []string) error {
 }
 
 func (self *ls) printNodesIn(path string, abs_path string) {
+	writer := bufio.NewWriter(self.writer)
+	
 	for _, node := range util.GetNodes(abs_path) {
 		node_path		:= filepath.Join(path, node.Name())
 		node_abs_path	:= filepath.Join(abs_path, node.Name())
 		
 		if node.IsDir() {
-			fmt.Println(node_path)
+			fmt.Fprintln(writer, node_path)
+			writer.Flush()
 
 			if self.recursive { self.printNodesIn(node_path, node_abs_path) }
 		} else {
@@ -54,11 +61,13 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 						log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Failed to load path")
 					}
 
-					fmt.Printf("%s: %s\n", filepath.Join(path, post_number), post.Name)
+					fmt.Fprintf(writer, "%s: %s\n", filepath.Join(path, post_number), post.Name)
 				}
 			} else {
 				log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Unknown node")
 			}
 		}
 	}
+
+	writer.Flush()
 }
