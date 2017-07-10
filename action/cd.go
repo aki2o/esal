@@ -49,7 +49,7 @@ func runPeco(path string, abs_path string) (string, error) {
 	provider := func(writer *io.PipeWriter) {
 		defer writer.Close()
 		
-		ls := &ls{ writer: writer, recursive: true }
+		ls := &ls{ writer: writer, recursive: true, directory_only: true }
 		ls.printNodesIn(path, abs_path)
 	}
 
