@@ -17,6 +17,7 @@ import (
 type ls struct {
 	writer io.Writer
 	recursive bool
+	directory_only bool
 }
 
 func init() {
@@ -25,6 +26,7 @@ func init() {
 
 func (self *ls) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.recursive, "r", false, "Recursive.")
+	flagset.BoolVar(&self.directory_only, "d", false, "Directory only.")
 }
 
 func (self *ls) Do(args []string) error {
@@ -47,7 +49,7 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 			writer.Flush()
 
 			if self.recursive { self.printNodesIn(node_path, node_abs_path) }
-		} else {
+		} else if ! self.directory_only {
 			node_name_parts := strings.Split(node.Name(), ".")
 			
 			if len(node_name_parts) == 2 {
