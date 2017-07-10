@@ -90,20 +90,21 @@ func pipePeco(provider func(*io.PipeWriter)) (string, error) {
 
 	var peco_err error = nil
 	go func() {
+		defer to_self_writer.Close()
+		
 		peco := peco.New()
 		peco.Argv	= []string{}
 		peco.Stdin	= from_provider_reader
 		peco.Stdout = to_self_writer
 
 		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		
 		if err := peco.Run(ctx); err != nil {
 			peco_err = err
 		}
-
-		peco.PrintResults()
 		
-		to_self_writer.Close()
-		cancel()
+		peco.PrintResults()
 	}()
 	if peco_err != nil { return "", peco_err }
 	

@@ -47,10 +47,10 @@ func (self *cd) Do(args []string) error {
 
 func runPeco(path string, abs_path string) (string, error) {
 	provider := func(writer *io.PipeWriter) {
+		defer writer.Close()
+		
 		ls := &ls{ writer: writer, recursive: true }
 		ls.printNodesIn(path, abs_path)
-		
-		writer.Close()
 	}
 
 	return pipePeco(provider)
