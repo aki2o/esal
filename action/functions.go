@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"path/filepath"
 	"strings"
+	"strconv"
 	"regexp"
 	"context"
 	"golang.org/x/exp/utf8string"
@@ -35,8 +36,8 @@ func SavePost(post *esa.PostResponse) {
 	StorePostData(post.Category, post.Number, "json", string(post_json_data))
 }
 
-func GetLocalPostPath(category string, number int, extension string) string {
-	return fmt.Sprintf("%s/%s/%d.%s", Context.Root(), category, number, extension)
+func GetLocalPostPath(category string, number_as_string string, extension string) string {
+	return fmt.Sprintf("%s/%s/%s.%s", Context.Root(), category, number_as_string, extension)
 }
 
 func GetLocalPostFileName(number_as_string string, extension string) string {
@@ -44,7 +45,7 @@ func GetLocalPostFileName(number_as_string string, extension string) string {
 }
 
 func StorePostData(category string, number int, extension string, body string) {
-	fp, err := os.Create(GetLocalPostPath(category, number, extension))
+	fp, err := os.Create(GetLocalPostPath(category, strconv.Itoa(number), extension))
 	if err != nil { panic(err) }
 	defer fp.Close()
 	writer := bufio.NewWriter(fp)

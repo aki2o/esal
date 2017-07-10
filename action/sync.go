@@ -49,7 +49,7 @@ func (self *sync) Do(args []string) error {
 			for _, post := range res.Posts {
 				fetched_count += 1
 				
-				if util.Exists(GetLocalPostPath(post.Category, post.Number, "lock")) { continue }
+				if util.Exists(GetLocalPostPath(post.Category, strconv.Itoa(post.Number), "lock")) { continue }
 				
 				SavePost(&post)
 			}

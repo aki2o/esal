@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"encoding/json"
+	"strconv"
 	"github.com/upamune/go-esa/esa"
 	"github.com/aki2o/esa-cui/util"
 )
@@ -42,8 +43,8 @@ func (self *cat) Do(args []string) error {
 		var post postProperty
 		if err := json.Unmarshal(bytes, &post); err != nil { return err }
 		
-		post.LocalPath	= GetLocalPostPath(post.Category, post.Number, "md")
-		post.Locked		= util.Exists(GetLocalPostPath(post.Category, post.Number, "lock"))
+		post.LocalPath	= GetLocalPostPath(post.Category, strconv.Itoa(post.Number), "md")
+		post.Locked		= util.Exists(GetLocalPostPath(post.Category, strconv.Itoa(post.Number), "lock"))
 
 		json_bytes, _ := json.MarshalIndent(post, "", "\t")
 		
