@@ -10,11 +10,11 @@ import (
 )
 
 func init() {
-	// fp, err := os.OpenFile("/tmp/esa.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0666)
-	// if err != nil { panic(err) }
+	fp, err := os.OpenFile("/tmp/esa.log", os.O_CREATE | os.O_WRONLY, 0666)
+	if err != nil { panic(err) }
 	
 	log.SetFormatter(&log.JSONFormatter{})
-	log.SetOutput(os.Stderr)
+	log.SetOutput(fp)
 	log.SetLevel(log.DebugLevel)
 }
 
