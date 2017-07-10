@@ -5,11 +5,7 @@ import (
 	"flag"
 	"os"
 	"io"
-	"io/ioutil"
-	"context"
-	"strings"
 	log "github.com/sirupsen/logrus"
-	"github.com/peco/peco"
 )
 
 type cd struct {
@@ -50,38 +46,13 @@ func (self *cd) Do(args []string) error {
 }
 
 func runPeco(path string, abs_path string) (string, error) {
-	from_ls_reader, to_peco_writer := io.Pipe()
-
-	go func() {
-		ls := &ls{ writer: to_peco_writer }
+	provider := func(writer *io.PipeWriter) {
+		ls := &ls{ writer: writer, recursive: true }
 		ls.printNodesIn(path, abs_path)
 		
-		to_peco_writer.Close()
-	}()
+		writer.Close()
+	}
 
-	from_peco_reader, to_self_writer := io.Pipe()
-
-	var peco_err error = nil
-	go func() {
-		peco := peco.New()
-		peco.Argv	= []string{}
-		peco.Stdin	= from_ls_reader
-		peco.Stdout = to_self_writer
-
-		ctx, cancel := context.WithCancel(context.Background())
-		if err := peco.Run(ctx); err != nil {
-			peco_err = err
-		}
-
-		peco.PrintResults()
-		
-		to_self_writer.Close()
-		cancel()
-	}()
-	if peco_err != nil { return "", peco_err }
-	
-	bytes, err := ioutil.ReadAll(from_peco_reader)
-	if err != nil { return "", err }
-
-	return strings.TrimRight(string(bytes), "\n"), nil
+	return pipePeco(provider)
 }
+

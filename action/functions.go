@@ -3,14 +3,18 @@ package action
 import (
 	"os"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"bufio"
 	"encoding/json"
 	"path/filepath"
+	"strings"
 	"regexp"
+	"context"
 	"golang.org/x/exp/utf8string"
 	log "github.com/sirupsen/logrus"
 	"github.com/upamune/go-esa/esa"
+	"github.com/peco/peco"
 	"github.com/aki2o/esa-cui/util"
 )
 
@@ -75,4 +79,36 @@ func DirectoryPathAndPostNumberOf(path string) (string, string) {
 	if len(matches) > 1 { post_number = matches[1] }
 	
 	return re.ReplaceAllString(path, ""), post_number
+}
+
+func pipePeco(provider func(*io.PipeWriter)) (string, error) {
+	from_provider_reader, to_peco_writer := io.Pipe()
+	
+	go provider(to_peco_writer)
+	
+	from_peco_reader, to_self_writer := io.Pipe()
+
+	var peco_err error = nil
+	go func() {
+		peco := peco.New()
+		peco.Argv	= []string{}
+		peco.Stdin	= from_provider_reader
+		peco.Stdout = to_self_writer
+
+		ctx, cancel := context.WithCancel(context.Background())
+		if err := peco.Run(ctx); err != nil {
+			peco_err = err
+		}
+
+		peco.PrintResults()
+		
+		to_self_writer.Close()
+		cancel()
+	}()
+	if peco_err != nil { return "", peco_err }
+	
+	bytes, err := ioutil.ReadAll(from_peco_reader)
+	if err != nil { return "", err }
+
+	return strings.TrimRight(string(bytes), "\n"), nil
 }
