@@ -51,7 +51,7 @@ func addQuery() error {
 	if entries_string == "" { return errors.New("Require value!") }
 	
 	fuzzy_key_re, _ := regexp.Compile("[a-z]: +")
-	trimmer := func (s string) string { return strings.Trim(s, " ") }
+	trimmer := func (s string) string { return strings.TrimSpace(s) }
 	entries_string = fuzzy_key_re.ReplaceAllStringFunc(entries_string, trimmer)
 	
 	entry_re, _					:= regexp.Compile("^(-?[a-z]+):(.+)$")
@@ -95,7 +95,7 @@ func scanName(required bool) string {
 	fmt.Print("Name: ")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
-	name := strings.Trim(scanner.Text(), " ")
+	name := strings.TrimSpace(scanner.Text())
 
 	if name != "" { return name }
 	if ! required { return name }
