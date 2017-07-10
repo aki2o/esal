@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	fp, err := os.OpenFile("/tmp/esa.log", os.O_CREATE | os.O_WRONLY, 0666)
+	fp, err := os.OpenFile("/tmp/esa.log", os.O_CREATE | os.O_TRUNC | os.O_WRONLY, 0666)
 	if err != nil { panic(err) }
 	
 	log.SetFormatter(&log.JSONFormatter{})
