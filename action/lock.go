@@ -10,6 +10,7 @@ import (
 
 type lock struct {
 	pecolize bool
+	recursive bool
 }
 
 func init() {
@@ -18,6 +19,7 @@ func init() {
 
 func (self *lock) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
+	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
 }
 
 func (self *lock) Do(args []string) error {
@@ -50,7 +52,7 @@ func (self *lock) runPeco(path string) (string, error) {
 	provider := func(writer *io.PipeWriter) {
 		defer writer.Close()
 		
-		ls := &ls{ writer: writer, recursive: true, file_only: true }
+		ls := &ls{ writer: writer, recursive: self.recursive, file_only: true }
 		ls.printNodesIn(path, AbsolutePathOf(path))
 	}
 
