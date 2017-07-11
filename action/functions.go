@@ -74,13 +74,20 @@ func AbsolutePathOf(path string) string {
 }
 
 func DirectoryPathAndPostNumberOf(path string) (string, string) {
-	re, _ := regexp.Compile("/?([0-9]*)$")
-	matches := re.FindStringSubmatch(path)
+	number_re, _ := regexp.Compile("(/[0-9]+):[^/]+$")
+	matches	:= number_re.FindStringSubmatch(path)
+
+	if len(matches) > 1 {
+		path = number_re.ReplaceAllString(path, "/")+matches[1]
+	}
+	
+	dir_re, _	:= regexp.Compile("/?([0-9]*)$")
+	matches = dir_re.FindStringSubmatch(path)
 	
 	var post_number string = ""
 	if len(matches) > 1 { post_number = matches[1] }
 	
-	return re.ReplaceAllString(path, ""), post_number
+	return dir_re.ReplaceAllString(path, ""), post_number
 }
 
 func pipePeco(provider func(*io.PipeWriter)) (string, error) {
