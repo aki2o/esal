@@ -11,6 +11,7 @@ import (
 	"strings"
 	"strconv"
 	"regexp"
+	"reflect"
 	"context"
 	"golang.org/x/exp/utf8string"
 	log "github.com/sirupsen/logrus"
@@ -89,25 +90,33 @@ func pipePeco(provider func(*io.PipeWriter)) (string, error) {
 	
 	from_peco_reader, to_self_writer := io.Pipe()
 
-	var peco_err error = nil
 	go func() {
 		defer to_self_writer.Close()
 		
 		peco := peco.New()
-		peco.Argv	= []string{}
+		peco.Argv	= []string{"--on-cancel", "error"}
 		peco.Stdin	= from_provider_reader
 		peco.Stdout = to_self_writer
-
+		
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		
+
 		if err := peco.Run(ctx); err != nil {
-			peco_err = err
+			// peco の終了を判断する機能が公開されていないので、 reflect を使って、無理矢理実装
+			err_type := reflect.ValueOf(err)
+			switch fmt.Sprintf("%s", err_type.Type()) {
+			case "peco.errCollectResults":
+				peco.PrintResults()
+				return
+			case "*peco.errWithExitStatus":
+				return
+			default:
+				log.Info(fmt.Sprintf("Peco return %s", err_type.Type()))
+				return
+			}
 		}
 		
-		peco.PrintResults()
 	}()
-	if peco_err != nil { return "", peco_err }
 	
 	bytes, err := ioutil.ReadAll(from_peco_reader)
 	if err != nil { return "", err }
