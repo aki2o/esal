@@ -64,11 +64,11 @@ func LoadPostData(path string, number_as_string string, extension string) []byte
 }
 
 func ExcludePostName(path string) string {
-	number_re, _ := regexp.Compile("(/[0-9]+):[^/]+$")
+	number_re, _ := regexp.Compile("(/|^)([0-9]+):[^/]+$")
 	matches	:= number_re.FindStringSubmatch(path)
 
-	if len(matches) > 1 {
-		return number_re.ReplaceAllString(path, "/")+matches[1]
+	if len(matches) > 2 {
+		return number_re.ReplaceAllString(path, matches[1])+matches[2]
 	} else {
 		return path
 	}
