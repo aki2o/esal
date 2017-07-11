@@ -18,6 +18,7 @@ type ls struct {
 	writer io.Writer
 	recursive bool
 	directory_only bool
+	file_only bool
 }
 
 func init() {
@@ -25,8 +26,9 @@ func init() {
 }
 
 func (self *ls) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.recursive, "r", false, "Recursive.")
+	flagset.BoolVar(&self.recursive, "r", false, "Recursively.")
 	flagset.BoolVar(&self.directory_only, "d", false, "Directory only.")
+	flagset.BoolVar(&self.file_only, "f", false, "File only.")
 }
 
 func (self *ls) Do(args []string) error {
@@ -45,8 +47,10 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 		node_abs_path	:= filepath.Join(abs_path, node.Name())
 		
 		if node.IsDir() {
-			fmt.Fprintln(writer, node_path)
-			writer.Flush()
+			if ! self.file_only {
+				fmt.Fprintln(writer, node_path)
+				writer.Flush()
+			}
 
 			if self.recursive { self.printNodesIn(node_path, node_abs_path) }
 		} else if ! self.directory_only {
