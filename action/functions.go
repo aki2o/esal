@@ -130,7 +130,6 @@ func pipePeco(provider func(*io.PipeWriter)) (string, error) {
 				return
 			}
 		}
-		
 	}()
 	
 	bytes, err := ioutil.ReadAll(from_peco_reader)

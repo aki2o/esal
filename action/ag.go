@@ -56,12 +56,13 @@ func (self *ag) Do(args []string) error {
 	if err != nil { return err }
 
 	if self.pecolize {
-		open := &open{}
-
+		if result == "" { return nil }
+		
 		path_re, _ := regexp.Compile("^(.+?)\\.md:[0-9]+:")
 		matches := path_re.FindStringSubmatch(result)
 
 		if len(matches) > 1 {
+			open := &open{}
 			return open.Do([]string{matches[1]})
 		} else {
 			return errors.New("Can't find post from result!")
