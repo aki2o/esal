@@ -63,7 +63,20 @@ func LoadPostData(path string, number_as_string string, extension string) []byte
 	return bytes
 }
 
+func ExcludePostName(path string) string {
+	number_re, _ := regexp.Compile("(/[0-9]+):[^/]+$")
+	matches	:= number_re.FindStringSubmatch(path)
+
+	if len(matches) > 1 {
+		return number_re.ReplaceAllString(path, "/")+matches[1]
+	} else {
+		return path
+	}
+}
+
 func AbsolutePathOf(path string) string {
+	path = ExcludePostName(path)
+	
 	if path == "" {
 		return Context.Cwd
 	} else if utf8string.NewString(path).Slice(0, 1) == "/" {
@@ -74,20 +87,15 @@ func AbsolutePathOf(path string) string {
 }
 
 func DirectoryPathAndPostNumberOf(path string) (string, string) {
-	number_re, _ := regexp.Compile("(/[0-9]+):[^/]+$")
-	matches	:= number_re.FindStringSubmatch(path)
-
-	if len(matches) > 1 {
-		path = number_re.ReplaceAllString(path, "/")+matches[1]
-	}
+	path = ExcludePostName(path)
 	
-	dir_re, _	:= regexp.Compile("/?([0-9]*)$")
-	matches = dir_re.FindStringSubmatch(path)
+	re, _	:= regexp.Compile("/?([0-9]*)$")
+	matches := re.FindStringSubmatch(path)
 	
 	var post_number string = ""
 	if len(matches) > 1 { post_number = matches[1] }
 	
-	return dir_re.ReplaceAllString(path, ""), post_number
+	return re.ReplaceAllString(path, ""), post_number
 }
 
 func pipePeco(provider func(*io.PipeWriter)) (string, error) {
