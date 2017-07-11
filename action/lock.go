@@ -4,21 +4,32 @@ import (
 	"flag"
 	"errors"
 	"os"
+	"io"
 	"github.com/aki2o/esa-cui/util"
 )
 
-type lock struct {}
+type lock struct {
+	pecolize bool
+}
 
 func init() {
 	addProcessor(&lock{}, "lock", "Start to guard a post from updated by SYNC.")
 }
 
 func (self *lock) SetOption(flagset *flag.FlagSet) {
+	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
 }
 
 func (self *lock) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
+
+	if self.pecolize {
+		next_path, err := self.runPeco(path)
+		if err != nil { return err }
+
+		path = next_path
+	}
 
 	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
 	if post_number == "" {
@@ -33,4 +44,15 @@ func (self *lock) Do(args []string) error {
 	
 	fp.Close()
 	return nil
+}
+
+func (self *lock) runPeco(path string) (string, error) {
+	provider := func(writer *io.PipeWriter) {
+		defer writer.Close()
+		
+		ls := &ls{ writer: writer, recursive: true, file_only: true }
+		ls.printNodesIn(path, AbsolutePathOf(path))
+	}
+
+	return pipePeco(provider)
 }

@@ -6,21 +6,32 @@ import (
 	"strconv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"github.com/upamune/go-esa/esa"
 )
 
-type upload struct {}
+type upload struct {
+	pecolize bool
+}
 
 func init() {
 	addProcessor(&upload{}, "upload", "Upload a post.")
 }
 
 func (self *upload) SetOption(flagset *flag.FlagSet) {
+	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
 }
 
 func (self *upload) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
+
+	if self.pecolize {
+		next_path, err := self.runPeco(path)
+		if err != nil { return err }
+
+		path = next_path
+	}
 
 	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
 	if post_number == "" {
@@ -42,4 +53,15 @@ func (self *upload) Do(args []string) error {
 
 	fmt.Println("Finished upload.")
 	return nil
+}
+
+func (self *upload) runPeco(path string) (string, error) {
+	provider := func(writer *io.PipeWriter) {
+		defer writer.Close()
+		
+		ls := &ls{ writer: writer, recursive: true, file_only: true }
+		ls.printNodesIn(path, AbsolutePathOf(path))
+	}
+
+	return pipePeco(provider)
 }

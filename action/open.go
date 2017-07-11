@@ -5,22 +5,33 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"io"
 	log "github.com/sirupsen/logrus"
 )
 
-type open struct {}
+type open struct {
+	pecolize bool
+}
 
 func init() {
 	addProcessor(&open{}, "open", "Open a post.")
 }
 
 func (self *open) SetOption(flagset *flag.FlagSet) {
+	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
 }
 
 func (self *open) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 	
+	if self.pecolize {
+		next_path, err := self.runPeco(path)
+		if err != nil { return err }
+
+		path = next_path
+	}
+
 	if path == "" {
 		return errors.New("Require path!")
 	}
@@ -52,4 +63,15 @@ func (self *open) Do(args []string) error {
 	if err := unlock_process.Do([]string{ path }); err != nil { return err }
 	
 	return nil
+}
+
+func (self *open) runPeco(path string) (string, error) {
+	provider := func(writer *io.PipeWriter) {
+		defer writer.Close()
+		
+		ls := &ls{ writer: writer, recursive: true, file_only: true }
+		ls.printNodesIn(path, AbsolutePathOf(path))
+	}
+
+	return pipePeco(provider)
 }
