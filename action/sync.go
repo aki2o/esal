@@ -2,6 +2,7 @@ package action
 
 import (
 	"flag"
+	"errors"
 	"net/url"
 	"strconv"
 	"time"
@@ -10,19 +11,28 @@ import (
 	"github.com/aki2o/esa-cui/config"
 )
 
-type sync struct {}
+type sync struct {
+	all bool
+}
 
 func init() {
 	addProcessor(&sync{}, "sync", "Fetch posts.")
 }
 
 func (self *sync) SetOption(flagset *flag.FlagSet) {
+	flagset.BoolVar(&self.all, "a", false, "Exec for all config.")
 }
 
 func (self *sync) Do(args []string) error {
+	if len(args) == 0 && !self.all {
+		return errors.New("Require query name!")
+	}
+	
 	query_configs := make([]config.Query, len(config.Team.Queries))
 	
 	for index, query_config := range config.Team.Queries {
+		if !self.isTarget(query_config, args) { continue }
+		
 		fetched_count	:= 0
 		total_count		:= 1
 		page_index		:= 1
@@ -65,4 +75,16 @@ func (self *sync) Do(args []string) error {
 	config.Team.Queries = query_configs
 	config.Save()
 	return nil
+}
+
+func (self *sync) isTarget(query config.Query, args []string) bool {
+	if self.all { return true }
+	
+	for _, query_name := range args {
+		if query_name == query.Name {
+			return true
+		}
+	}
+	
+	return false
 }
