@@ -14,6 +14,7 @@ import (
 
 type sync struct {
 	all bool
+	force bool
 	progress_bars map[string]*pb.ProgressBar
 }
 
@@ -23,6 +24,7 @@ func init() {
 
 func (self *sync) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.all, "a", false, "Exec for all config.")
+	flagset.BoolVar(&self.force, "f", false, "Exec with ignore last synchronized time.")
 }
 
 func (self *sync) Do(args []string) error {
@@ -74,7 +76,7 @@ func (self *sync) setupProgressBars(args []string) (*pb.Pool, error) {
 		if ! self.isTarget(query_config, args) { continue }
 
 		bar := pb.New(0).Prefix(query_config.Name)
-		// bar.SetRefreshRate(time.Second)
+		bar.SetRefreshRate(time.Millisecond * 100)
 		bar.ShowCounters = true
 		bar.ShowTimeLeft = false
 		bar.ShowSpeed = false
@@ -111,7 +113,9 @@ func (self *sync) processQuery(query_config config.Query) error {
 		
 		query.Add("page", strconv.Itoa(page_index))
 		query.Add("per_page", "100")
-		query.Add("updated", ">"+query_config.SynchronizedAt.Format("2006-01-02"))
+		if ! self.force {
+			query.Add("updated", ">"+query_config.SynchronizedAt.Format("2006-01-02"))
+		}
 		
 		log.WithFields(log.Fields{ "page": page_index, "total_count": total_count }).Debug("get post")
 		res, err := Context.Client.Post.GetPosts(Context.Team, query)
