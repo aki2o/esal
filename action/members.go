@@ -36,6 +36,11 @@ func (self *members) Do(args []string) error {
 	if err != nil { return err }
 
 	if self.refresh || len(members) == 0 {
+		if self.refresh {
+			err = os.Remove(self.GetLocalStragePath())
+			if err != nil { return err }
+		}
+		
 		if err = self.fetch(); err != nil { return err }
 
 		members, err = self.load()
