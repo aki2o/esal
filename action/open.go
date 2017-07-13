@@ -56,9 +56,9 @@ func (self *open) Do(args []string) error {
 	if err != nil { return err }
 
 	if after_file_info.ModTime().After(before_file_info.ModTime()) {
-		log.WithFields(log.Fields{ "path": path }).Info("Start upload after open.")
-		upload_process := &upload{}
-		if err := upload_process.Do([]string{ path }); err != nil { return err }
+		log.WithFields(log.Fields{ "path": path }).Info("Start update after open.")
+		update_process := &update{}
+		if err := update_process.Do([]string{ path }); err != nil { return err }
 	}
 
 	unlock_process := &unlock{}

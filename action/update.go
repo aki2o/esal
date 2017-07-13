@@ -10,21 +10,21 @@ import (
 	"github.com/aki2o/go-esa/esa"
 )
 
-type upload struct {
+type update struct {
 	pecolize bool
 	recursive bool
 }
 
 func init() {
-	addProcessor(&upload{}, "upload", "Upload a post.")
+	addProcessor(&update{}, "update", "Update a post.")
 }
 
-func (self *upload) SetOption(flagset *flag.FlagSet) {
+func (self *update) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
 	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
 }
 
-func (self *upload) Do(args []string) error {
+func (self *update) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 
@@ -57,7 +57,7 @@ func (self *upload) Do(args []string) error {
 	return nil
 }
 
-func (self *upload) runPeco(path string) (string, error) {
+func (self *update) runPeco(path string) (string, error) {
 	provider := func(writer *io.PipeWriter) {
 		defer writer.Close()
 		
