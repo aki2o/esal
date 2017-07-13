@@ -40,12 +40,25 @@ func (self *update) Do(args []string) error {
 		return errors.New("Require post number!")
 	}
 
-	var post esa.Post
+	var postres esa.PostResponse
 	bytes := LoadPostData(AbsolutePathOf(dir_path), post_number, "json")
-	if err := json.Unmarshal(bytes, &post); err != nil { return err }
-	
+	if err := json.Unmarshal(bytes, &postres); err != nil { return err }
+
 	bytes = LoadPostData(AbsolutePathOf(dir_path), post_number, "md")
-	post.BodyMd = string(bytes)
+	
+	post := esa.Post{
+		Name: postres.Name,
+		BodyMd: string(bytes),
+		Tags: postres.Tags,
+		Category: postres.Category,
+		Wip: postres.Wip,
+		// UpdatedBy: "",
+		OriginalRevision: esa.PostOriginalRevision {
+			BodyMd: postres.BodyMd,
+			Number: postres.RevisionNumber,
+			User: postres.UpdatedBy.ScreenName,
+		},
+	}
 
 	fmt.Println("Start upload...")
 	post_number_i, _ := strconv.Atoi(post_number)

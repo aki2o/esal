@@ -26,7 +26,6 @@ func SavePost(post *esa.PostResponse) {
 	util.EnsureDir(Context.Root()+"/"+post.Category)
 	StorePostData(post.Category, post.Number, "md", post.BodyMd)
 
-	post.BodyMd = ""
 	post.BodyHTML = ""
 	
 	post_json_data, err := json.MarshalIndent(post, "", "\t")
