@@ -16,6 +16,7 @@ import (
 
 type ls struct {
 	writer io.Writer
+	long_format bool
 	recursive bool
 	directory_only bool
 	file_only bool
@@ -26,6 +27,7 @@ func init() {
 }
 
 func (self *ls) SetOption(flagset *flag.FlagSet) {
+	flagset.BoolVar(&self.long_format, "l", false, "Print long format.")
 	flagset.BoolVar(&self.recursive, "r", false, "Recursively.")
 	flagset.BoolVar(&self.directory_only, "d", false, "Directory only.")
 	flagset.BoolVar(&self.file_only, "f", false, "File only.")
@@ -67,7 +69,19 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 						log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Failed to load path")
 					}
 
-					fmt.Fprintf(writer, "%s: %s\n", filepath.Join(path, post_number), post.Name)
+					if self.long_format {
+						var wip string = ""
+						var lock string = ""
+						var tag string = ""
+						
+						if post.Wip { wip = " [WIP]" }
+						if _, err := os.Stat(GetLocalPostPath(post.Category, post_number, "lock")); err == nil { lock = " *Lock*" }
+						if len(post.Tags) > 0 { tag = " #"+strings.Join(post.Tags, " #") }
+						
+						fmt.Fprintf( writer, "%s:%s%s %s%s\n", filepath.Join(path, post_number), wip, lock, post.Name, tag)
+					} else {
+						fmt.Fprintf(writer, "%s: %s\n", filepath.Join(path, post_number), post.Name)
+					}
 				}
 			} else {
 				log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Unknown node")
