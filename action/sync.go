@@ -103,7 +103,7 @@ func (self *sync) processQuery(query_config config.Query) error {
 	
 	defer progress_bar.Finish()
 	
-	log.Info("start to fetch "+Context.Team+":"+query_config.Name)
+	log.Info("start to fetch post "+Context.Team+":"+query_config.Name)
 	for fetched_count < total_count {
 		query := url.Values{}
 
@@ -117,7 +117,7 @@ func (self *sync) processQuery(query_config config.Query) error {
 			query.Add("updated", ">"+query_config.SynchronizedAt.Format("2006-01-02"))
 		}
 		
-		log.WithFields(log.Fields{ "page": page_index, "total_count": total_count }).Debug("get post")
+		log.WithFields(log.Fields{ "page": page_index, "fetched_count": fetched_count }).Debug("get post")
 		res, err := Context.Client.Post.GetPosts(Context.Team, query)
 		if err != nil { return err }
 		log.WithFields(log.Fields{ "next_page": res.NextPage }).Debug("got post")
@@ -143,6 +143,6 @@ func (self *sync) processQuery(query_config config.Query) error {
 		page_index += 1
 	}
 
-	log.Info("finished to fetch "+Context.Team+":"+query_config.Name)
+	log.Info("finished to fetch post "+Context.Team+":"+query_config.Name)
 	return nil
 }

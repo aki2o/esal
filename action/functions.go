@@ -15,7 +15,7 @@ import (
 	"context"
 	"golang.org/x/exp/utf8string"
 	log "github.com/sirupsen/logrus"
-	"github.com/upamune/go-esa/esa"
+	"github.com/aki2o/go-esa/esa"
 	"github.com/peco/peco"
 	"github.com/aki2o/esa-cui/util"
 )

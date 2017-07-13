@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"github.com/upamune/go-esa/esa"
+	"github.com/aki2o/go-esa/esa"
 )
 
 type upload struct {

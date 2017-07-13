@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"io"
-	"github.com/upamune/go-esa/esa"
+	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esa-cui/util"
 )
 

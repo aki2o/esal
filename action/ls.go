@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/upamune/go-esa/esa"
+	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esa-cui/util"
 )
 
@@ -69,8 +69,8 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 
 					var post esa.PostResponse
 					if err := json.Unmarshal(bytes, &post); err != nil {
-						log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Failed to load path")
-						util.PutError(errors.New("Failed to load post data of "+post_number))
+						log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Failed to load post")
+						util.PutError(errors.New("Failed to load post data of "+post_number+"!"))
 					} else {
 						fmt.Fprintln(writer, self.makeFileLine(path, &post))
 					}

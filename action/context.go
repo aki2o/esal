@@ -4,7 +4,7 @@ import (
 	"errors"
 	"path/filepath"
 	log "github.com/sirupsen/logrus"
-	"github.com/upamune/go-esa/esa"
+	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esa-cui/util"
 )
 
