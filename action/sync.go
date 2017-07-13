@@ -114,7 +114,12 @@ func (self *sync) processQuery(query_config config.Query) error {
 		query.Add("page", strconv.Itoa(page_index))
 		query.Add("per_page", "100")
 		if ! self.force {
-			query.Add("updated", ">"+query_config.SynchronizedAt.Format("2006-01-02"))
+			// 当日以降に更新されたものを取得するためには、esaのドキュメントには指定日以降と記述されているが、
+			// 記号が不等号から判断すると、前日を指定しないとダメっぽい。
+			// さらに、実際は前日でもダメで前々日を指定しないといけないが、これはesa APIのバグっぽい。TZが考慮できてないとかなのかな
+			prev_day_duration, _ := time.ParseDuration("-48h")
+			
+			query.Add("updated", ">"+query_config.SynchronizedAt.Add(prev_day_duration).Format("2006-01-02"))
 		}
 		
 		log.WithFields(log.Fields{ "page": page_index, "fetched_count": fetched_count }).Debug("get post")
