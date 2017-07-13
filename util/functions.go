@@ -63,16 +63,16 @@ func ProcessInteractive(name string, repo *ProcessorRepository) {
 		processor	:= repo.GetProcessor(processor_name)
 		usage		:= repo.GetUsage(processor_name)
 
-		adapter := &ishellAdapter{
-			processor: processor,
-			processor_name: processor_name,
-			processor_usage: usage,
+		adapter := &IshellAdapter{
+			Processor: processor,
+			ProcessorName: processor_name,
+			ProcessorUsage: usage,
 		}
 		
 		shell.AddCmd(&ishell.Cmd{
 			Name: processor_name,
 			Help: usage,
-			Func: adapter.adapt,
+			Func: adapter.Adapt,
 		})
 	}
 

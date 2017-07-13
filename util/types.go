@@ -56,33 +56,37 @@ func (self *ProcessorRepository) GetUsage(name string) string {
 	return self.usages[name]
 }
 
-type ishellAdapter struct {
-	processor Processable
-	processor_name string
-	processor_usage string
+type IshellAdapter struct {
+	Processor Processable
+	ProcessorName string
+	ProcessorUsage string
 }
 
-func (self *ishellAdapter) adapt(ctx *ishell.Context) {
-	flagset := flag.NewFlagSet(self.processor_name, flag.PanicOnError)
+func (self *IshellAdapter) Adapt(ctx *ishell.Context) {
+	self.Run(ctx.Args)
+}
+
+func (self *IshellAdapter) Run(args []string) {
+	flagset := flag.NewFlagSet(self.ProcessorName, flag.PanicOnError)
 	
 	var help_required bool = false
 	flagset.BoolVar(&help_required, "h", false, "Show help.")
 	
-	self.processor.SetOption(flagset)
+	self.Processor.SetOption(flagset)
 	
-	err := flagset.Parse(ctx.Args)
+	err := flagset.Parse(args)
 	if err != nil {
 		PutError(err)
 		return
 	}
 
 	if help_required {
-		fmt.Fprintf(os.Stderr, "%s: %s\n\nOptions:\n", self.processor_name, self.processor_usage)
+		fmt.Fprintf(os.Stderr, "%s: %s\n\nOptions:\n", self.ProcessorName, self.ProcessorUsage)
 		flagset.PrintDefaults()
 		return
 	}
 	
-	err = self.processor.Do(flagset.Args())
+	err = self.Processor.Do(flagset.Args())
 	if err != nil {
 		PutError(err)
 		return
