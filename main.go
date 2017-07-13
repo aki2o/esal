@@ -2,8 +2,6 @@ package main
 
 import (
 	"os"
-	"flag"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"github.com/aki2o/esa-cui/util"
@@ -64,28 +62,40 @@ func main() {
 				
 				if err := action.SetupContext(team, access_token); err != nil { panic(err) }
 
-				repo := action.ProcessorRepository()
-				processor := repo.GetProcessor("sync")
-				
-				flagset := flag.NewFlagSet("sync", flag.PanicOnError)
+				repo			:= action.ProcessorRepository()
+				processor_name	:= "sync"
 
-				var help_required bool = false
-				flagset.BoolVar(&help_required, "h", false, "Show help.")
-	
-				processor.SetOption(flagset)
-
-				err := flagset.Parse(ctx.Args()[1:])
-				if err != nil {	return err }
-
-				if help_required {
-					fmt.Fprintf(os.Stderr, "%s: %s\n\nOptions:\n", "sync", repo.GetUsage("sync"))
-					flagset.PrintDefaults()
-					return nil
+				adapter := &util.IshellAdapter{
+					Processor: repo.GetProcessor(processor_name),
+					ProcessorName: processor_name,
+					ProcessorUsage: repo.GetUsage(processor_name),
 				}
-				
-				err = processor.Do(flagset.Args())
-				if err != nil { return err }
 
+				adapter.Run(ctx.Args()[1:])
+				return nil
+			},
+		},
+		{
+			Name: "members",
+			Usage: "Print members.",
+			Action: func(ctx *cli.Context) error {
+				team := ctx.Args().First()
+				access_token := os.Getenv("ESA_CUI_ACCESS_TOKEN")
+				
+				config.Load(team)
+				
+				if err := action.SetupContext(team, access_token); err != nil { panic(err) }
+
+				repo			:= action.ProcessorRepository()
+				processor_name	:= "members"
+
+				adapter := &util.IshellAdapter{
+					Processor: repo.GetProcessor(processor_name),
+					ProcessorName: processor_name,
+					ProcessorUsage: repo.GetUsage(processor_name),
+				}
+
+				adapter.Run(ctx.Args()[1:])
 				return nil
 			},
 		},
