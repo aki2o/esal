@@ -64,9 +64,13 @@ func (self *update) Do(args []string) error {
 	post_number_i, _ := strconv.Atoi(post_number)
 	res, err := Context.Client.Post.Update(Context.Team, post_number_i, post)
 	if err != nil { return err }
-	SavePost(res)
-
 	fmt.Println("Finished upload.")
+	
+	SavePost(res)
+	if res.OverLapped {
+		fmt.Printf("Conflict happened!!!\nFor resolving that, you should do `open %s`.\n", path)
+	}
+
 	return nil
 }
 
