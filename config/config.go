@@ -46,6 +46,7 @@ func Load(team string) {
 	}
 
 	Team = &TeamConfig{ Name: team }
+	Global.Teams = append(Global.Teams, *Team)
 }
 
 func Save() {
@@ -61,11 +62,15 @@ func Save() {
 	
 	bytes, err := json.MarshalIndent(Global, "", "\t")
 	if err != nil { panic(err) }
+	
 	fp, err := os.Create(config_path)
 	if err != nil { panic(err) }
+	defer fp.Close()
+	
 	writer := bufio.NewWriter(fp)
 	_, err = writer.WriteString(string(bytes))
 	if err != nil { panic(err) }
+	
 	writer.Flush()
 }
 
