@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"github.com/aki2o/go-esa/esa"
 )
 
@@ -42,15 +43,22 @@ func (self *update) Do(args []string) error {
 
 	json_bytes, err := LoadPostData(dir_path, post_number)
 	if err != nil { return err }
-	
+
 	var postres esa.PostResponse
 	if err = json.Unmarshal(json_bytes, &postres); err != nil { return err }
 
+	latest_postres, err := Context.Client.Post.GetPost(Context.Team, postres.Number)
+	if err != nil { return err }
+
+	if latest_postres.RevisionNumber != postres.RevisionNumber {
+		return errors.New("Post has been updated by other user!")
+	}
+	
 	body_bytes, err := LoadPostBody(post_number)
 	if err != nil { return err }
 	
 	lock_bytes, err := LoadPostLock(post_number)
-	if err != nil { return err }
+	if err != nil { lock_bytes = body_bytes }
 	
 	post := esa.Post{
 		Name: postres.Name,
@@ -67,15 +75,14 @@ func (self *update) Do(args []string) error {
 	}
 
 	fmt.Println("Start upload...")
-	post_number_i, _ := strconv.Atoi(post_number)
-	res, err := Context.Client.Post.Update(Context.Team, post_number_i, post)
+	res, err := Context.Client.Post.Update(Context.Team, postres.Number, post)
 	if err != nil { return err }
 	fmt.Println("Finished upload.")
 	
-	SavePost(res)
-	if res.OverLapped {
-		fmt.Printf("Conflict happened!!!\nFor resolving that, you should do `open %s`.\n", path)
-	}
+	if res.OverLapped { fmt.Fprintln(os.Stderr, "Conflict happened!") }
+
+	err = SavePost(res)
+	if err != nil { return err }
 
 	unlock_process := &unlock{}
 	if err := unlock_process.Do([]string{ path }); err != nil { return err }
