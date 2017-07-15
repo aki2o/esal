@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 	"fmt"
+	"os"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/cheggaaa/pb.v1"
 	"github.com/aki2o/esa-cui/util"
@@ -142,11 +143,14 @@ func (self *sync) processQuery(query_config config.Query) error {
 			
 			if util.Exists(GetPostLockPath(strconv.Itoa(post.Number))) {
 				log.WithFields(log.Fields{ "number": post.Number }).Info("skip locked post")
-				fmt.Printf("Skip a locked post %d: %s\n", post.Number, post.Name)
+				fmt.Printf("Skip a locked post %d: %s\n", post.Number, post.FullName)
 				continue
 			}
 			
-			SavePost(&post)
+			if err = SavePost(&post); err != nil {
+				log.WithFields(log.Fields{ "number": post.Number, "full_name": post.FullName, "error": err.Error() }).Error("failed to save post")
+				fmt.Fprintf(os.Stderr, "Failed to save post %d: %s\n", post.Number, post.FullName)
+			}
 			progress_bar.Increment()
 		}
 
