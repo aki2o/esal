@@ -3,7 +3,6 @@ package action
 import (
 	"flag"
 	"errors"
-	"os"
 	"io"
 	"github.com/aki2o/esa-cui/util"
 )
@@ -33,18 +32,20 @@ func (self *lock) Do(args []string) error {
 		path = next_path
 	}
 
-	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
+	_, post_number := DirectoryPathAndPostNumberOf(path)
 	if post_number == "" {
 		return errors.New("Require post number!")
 	}
 
-	lock_file_path := AbsolutePathOf(dir_path)+"/"+GetLocalPostFileName(post_number, "lock")
+	lock_file_path := GetPostLockPath(post_number)
 	if util.Exists(lock_file_path) { return nil }
-	
-	fp, err := os.Create(lock_file_path)
+
+	bytes, err := LoadPostBody(post_number)
 	if err != nil { return err }
-	
-	fp.Close()
+
+	err = util.CreateFile(lock_file_path, string(bytes))
+	if err != nil { return err }
+
 	return nil
 }
 

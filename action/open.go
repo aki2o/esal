@@ -59,11 +59,11 @@ func (self *open) Do(args []string) error {
 		log.WithFields(log.Fields{ "path": path }).Info("Start update after open.")
 		update_process := &update{}
 		if err := update_process.Do([]string{ path }); err != nil { return err }
+	} else {
+		unlock_process := &unlock{}
+		if err := unlock_process.Do([]string{ path }); err != nil { return err }
 	}
 
-	unlock_process := &unlock{}
-	if err := unlock_process.Do([]string{ path }); err != nil { return err }
-	
 	return nil
 }
 

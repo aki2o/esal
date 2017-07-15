@@ -33,12 +33,12 @@ func (self *unlock) Do(args []string) error {
 		path = next_path
 	}
 
-	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
+	_, post_number := DirectoryPathAndPostNumberOf(path)
 	if post_number == "" {
 		return errors.New("Require post number!")
 	}
 
-	lock_file_path := AbsolutePathOf(dir_path)+"/"+GetLocalPostFileName(post_number, "lock")
+	lock_file_path := GetPostLockPath(post_number)
 	if ! util.Exists(lock_file_path) { return nil }
 	
 	if err := os.Remove(lock_file_path); err != nil { return err }

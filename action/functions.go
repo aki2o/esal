@@ -1,11 +1,9 @@
 package action
 
 import (
-	"os"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"bufio"
 	"encoding/json"
 	"path/filepath"
 	"strings"
@@ -13,53 +11,53 @@ import (
 	"regexp"
 	"reflect"
 	"context"
-	"golang.org/x/exp/utf8string"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/peco/peco"
 	"github.com/aki2o/esa-cui/util"
 )
 
-func SavePost(post *esa.PostResponse) {
+func GetPostPath(category string, number_as_string string) string {
+	return filepath.Join(AbsolutePathOf(category), number_as_string)
+}
+
+func GetPostBodyPath(number_as_string string) string {
+	return filepath.Join(Context.BodyRoot(), fmt.Sprintf("%s.md", number_as_string))
+}
+
+func GetPostLockPath(number_as_string string) string {
+	return filepath.Join(Context.BodyRoot(), fmt.Sprintf("%s.lock", number_as_string))
+}
+
+func SavePost(post *esa.PostResponse) error {
 	log.WithFields(log.Fields{ "path": post.FullName }).Debug("start to save post")
 	
-	util.EnsureDir(Context.Root()+"/"+post.Category)
-	StorePostData(post.Category, post.Number, "md", post.BodyMd)
+	util.EnsureDir(AbsolutePathOf("/"+post.Category))
+	err := util.CreateFile(GetPostBodyPath(strconv.Itoa(post.Number)), post.BodyMd)
+	if err != nil { return err }
 
+	post.BodyMd = ""
 	post.BodyHTML = ""
 	
 	post_json_data, err := json.MarshalIndent(post, "", "\t")
-	if err != nil {
-		util.PutError(err)
-		return
-	}
-	StorePostData(post.Category, post.Number, "json", string(post_json_data))
+	if err != nil { return err }
+	
+	err = util.CreateFile(GetPostPath(post.Category, strconv.Itoa(post.Number)), string(post_json_data))
+	if err != nil { return err }
+
+	return nil
 }
 
-func GetLocalPostPath(category string, number_as_string string, extension string) string {
-	return fmt.Sprintf("%s/%s/%s.%s", Context.Root(), category, number_as_string, extension)
+func LoadPostData(category string, number_as_string string) ([]byte, error) {
+	return ioutil.ReadFile(GetPostPath(category, number_as_string))
 }
 
-func GetLocalPostFileName(number_as_string string, extension string) string {
-	return fmt.Sprintf("%s.%s", number_as_string, extension)
+func LoadPostBody(number_as_string string) ([]byte, error) {
+	return ioutil.ReadFile(GetPostBodyPath(number_as_string))
 }
 
-func StorePostData(category string, number int, extension string, body string) {
-	fp, err := os.Create(GetLocalPostPath(category, strconv.Itoa(number), extension))
-	if err != nil { panic(err) }
-	defer fp.Close()
-	writer := bufio.NewWriter(fp)
-	_, err = writer.WriteString(body)
-	if err != nil { panic(err) }
-	writer.Flush()
-}
-
-func LoadPostData(path string, number_as_string string, extension string) []byte {
-	file_path := fmt.Sprintf("%s/%s", path, GetLocalPostFileName(number_as_string, extension))
-	bytes, err := ioutil.ReadFile(file_path)
-	if err != nil { panic(err) }
-
-	return bytes
+func LoadPostLock(number_as_string string) ([]byte, error) {
+	return ioutil.ReadFile(GetPostLockPath(number_as_string))
 }
 
 func ExcludePostName(path string) string {
@@ -75,13 +73,14 @@ func ExcludePostName(path string) string {
 
 func AbsolutePathOf(path string) string {
 	path = ExcludePostName(path)
+	if path == "" {	return Context.Cwd }
 	
-	if path == "" {
-		return Context.Cwd
-	} else if utf8string.NewString(path).Slice(0, 1) == "/" {
-		return filepath.Join(Context.Root(), path)
+	dir_names := strings.Split(path, "/")
+	
+	if dir_names[0] == "" {
+		return filepath.Join(Context.Root(), filepath.Join(dir_names...))
 	} else {
-		return filepath.Join(Context.Cwd, path)
+		return filepath.Join(Context.Cwd, filepath.Join(dir_names...))
 	}
 }
 

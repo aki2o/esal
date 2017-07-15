@@ -59,24 +59,18 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 
 			if self.recursive { self.printNodesIn(node_path, node_abs_path) }
 		} else if ! self.directory_only {
-			node_name_parts := strings.Split(node.Name(), ".")
+			var post esa.PostResponse
 			
-			if len(node_name_parts) == 2 {
-				post_number := node_name_parts[0]
-				post_data_type := node_name_parts[1]
-				if post_data_type == "json" {
-					bytes := LoadPostData(abs_path, post_number, "json")
+			post_number := node.Name()
+			bytes, err := LoadPostData(path, post_number)
+			
+			if err == nil { err = json.Unmarshal(bytes, &post) }
 
-					var post esa.PostResponse
-					if err := json.Unmarshal(bytes, &post); err != nil {
-						log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Failed to load post")
-						util.PutError(errors.New("Failed to load post data of "+post_number+"!"))
-					} else {
-						fmt.Fprintln(writer, self.makeFileLine(path, &post))
-					}
-				}
+			if err != nil {
+				log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Failed to load post")
+				util.PutError(errors.New("Failed to load post data of "+post_number+"!"))
 			} else {
-				log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Unknown node")
+				fmt.Fprintln(writer, self.makeFileLine(path, &post))
 			}
 		}
 	}
@@ -98,7 +92,7 @@ func (self *ls) makeFileLine(path string, post *esa.PostResponse) string {
 		var tag string = ""
 		
 		if post.Wip { wip = " [WIP]" }
-		if _, err := os.Stat(GetLocalPostPath(post.Category, post_number, "lock")); err == nil { lock = " *Lock*" }
+		if _, err := os.Stat(GetPostLockPath(post_number)); err == nil { lock = " *Lock*" }
 		if len(post.Tags) > 0 { tag = " #"+strings.Join(post.Tags, " #") }
 		
 		name_part = fmt.Sprintf("%s:%s%s %s%s", filepath.Join(path, post_number), wip, lock, post.Name, tag)
@@ -121,7 +115,7 @@ func (self *ls) makePostStatPart(path string, post *esa.PostResponse) string {
 		create_user = post.CreatedBy.ScreenName
 		update_user = post.UpdatedBy.ScreenName
 
-		file_info, err := os.Stat(GetLocalPostPath(post.Category, strconv.Itoa(post.Number), "md"))
+		file_info, err := os.Stat(GetPostBodyPath(strconv.Itoa(post.Number)))
 		if err == nil {
 			post_size = fmt.Sprintf("%d", file_info.Size())
 		} else {

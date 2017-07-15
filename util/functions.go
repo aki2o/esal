@@ -56,6 +56,19 @@ func Readln(r *bufio.Reader) (string, error) {
     return string(ln), err
 }
 
+func CreateFile(path string, body string) error {
+	fp, err := os.Create(path)
+	if err != nil { return err }
+	defer fp.Close()
+	
+	writer := bufio.NewWriter(fp)
+	_, err = writer.WriteString(body)
+	if err != nil { return err }
+	writer.Flush()
+
+	return nil
+}
+
 func ProcessInteractive(name string, repo *ProcessorRepository) {
 	shell := ishell.New()
 

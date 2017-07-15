@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 	"time"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/cheggaaa/pb.v1"
 	"github.com/aki2o/esa-cui/util"
@@ -139,7 +140,11 @@ func (self *sync) processQuery(query_config config.Query) error {
 		for _, post := range res.Posts {
 			fetched_count += 1
 			
-			if util.Exists(GetLocalPostPath(post.Category, strconv.Itoa(post.Number), "lock")) { continue }
+			if util.Exists(GetPostLockPath(strconv.Itoa(post.Number))) {
+				log.WithFields(log.Fields{ "number": post.Number }).Info("skip locked post")
+				fmt.Printf("Skip a locked post %d: %s\n", post.Number, post.Name)
+				continue
+			}
 			
 			SavePost(&post)
 			progress_bar.Increment()

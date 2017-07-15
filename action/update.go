@@ -40,21 +40,27 @@ func (self *update) Do(args []string) error {
 		return errors.New("Require post number!")
 	}
 
+	json_bytes, err := LoadPostData(dir_path, post_number)
+	if err != nil { return err }
+	
 	var postres esa.PostResponse
-	bytes := LoadPostData(AbsolutePathOf(dir_path), post_number, "json")
-	if err := json.Unmarshal(bytes, &postres); err != nil { return err }
+	if err = json.Unmarshal(json_bytes, &postres); err != nil { return err }
 
-	bytes = LoadPostData(AbsolutePathOf(dir_path), post_number, "md")
+	body_bytes, err := LoadPostBody(post_number)
+	if err != nil { return err }
+	
+	lock_bytes, err := LoadPostLock(post_number)
+	if err != nil { return err }
 	
 	post := esa.Post{
 		Name: postres.Name,
-		BodyMd: string(bytes),
+		BodyMd: string(body_bytes),
 		Tags: postres.Tags,
 		Category: postres.Category,
 		Wip: postres.Wip,
 		// UpdatedBy: "",
 		OriginalRevision: esa.PostOriginalRevision {
-			BodyMd: postres.BodyMd,
+			BodyMd: string(lock_bytes),
 			Number: postres.RevisionNumber,
 			User: postres.UpdatedBy.ScreenName,
 		},
@@ -71,6 +77,9 @@ func (self *update) Do(args []string) error {
 		fmt.Printf("Conflict happened!!!\nFor resolving that, you should do `open %s`.\n", path)
 	}
 
+	unlock_process := &unlock{}
+	if err := unlock_process.Do([]string{ path }); err != nil { return err }
+	
 	return nil
 }
 

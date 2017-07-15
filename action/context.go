@@ -9,14 +9,19 @@ import (
 )
 
 type EsaCuiActionContext struct {
-	local_strage_path string
-	Team              string
-	Cwd               string
-	Client            *esa.Client
+	post_strage_root_path	string
+	post_body_strage_path	string
+	Team					string
+	Cwd						string
+	Client					*esa.Client
 }
 
 func (c *EsaCuiActionContext) Root() string {
-	return filepath.Join(c.local_strage_path, c.Team)
+	return filepath.Join(c.post_strage_root_path, c.Team)
+}
+
+func (c *EsaCuiActionContext) BodyRoot() string {
+	return filepath.Join(c.post_body_strage_path, c.Team)
 }
 
 var Context *EsaCuiActionContext
@@ -28,10 +33,11 @@ func SetupContext(team string, access_token string) error {
 		return errors.New("Invalid Team!")
 	}
 	
-	Context.local_strage_path	= filepath.Join(util.LocalRootPath(), "posts")
-	Context.Team				= team
-	Context.Cwd					= Context.Root()
-	Context.Client				= esa.NewClient(access_token)
+	Context.post_strage_root_path	= filepath.Join(util.LocalRootPath(), ".posts")
+	Context.post_body_strage_path	= filepath.Join(util.LocalRootPath(), "posts")
+	Context.Team					= team
+	Context.Cwd						= Context.Root()
+	Context.Client					= esa.NewClient(access_token)
 	
 	log.WithFields(log.Fields{ "team": Context.Team, "cwd": Context.Cwd }).Debug("setup Context")
 	

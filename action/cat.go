@@ -80,19 +80,21 @@ func (self *cat) Do(args []string) error {
 	}
 
 	if self.json_format {
-		bytes := LoadPostData(AbsolutePathOf(dir_path), post_number, "json")
+		bytes, err := LoadPostData(dir_path, post_number)
+		if err != nil { return err }
 
 		var post postProperty
 		if err := json.Unmarshal(bytes, &post); err != nil { return err }
 
-		post.LocalPath	= GetLocalPostPath(post.Category, strconv.Itoa(post.Number), "md")
-		post.Locked		= util.Exists(GetLocalPostPath(post.Category, strconv.Itoa(post.Number), "lock"))
+		post.LocalPath	= GetPostBodyPath(strconv.Itoa(post.Number))
+		post.Locked		= util.Exists(GetPostLockPath(strconv.Itoa(post.Number)))
 
 		json_bytes, _ := json.MarshalIndent(post, "", "\t")
 		
 		fmt.Println(string(json_bytes))
 	} else {
-		bytes := LoadPostData(AbsolutePathOf(dir_path), post_number, "md")
+		bytes, err := LoadPostBody(post_number)
+		if err != nil { return err }
 		
 		fmt.Println(string(bytes))
 	}
