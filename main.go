@@ -31,7 +31,7 @@ func main() {
 				
 				config.Load(team)
 				
-				if err := action.SetupContext(team, access_token); err != nil { panic(err) }
+				if err := action.SetupContext(team, access_token, true); err != nil { panic(err) }
 
 				util.ProcessInteractive("action", action.ProcessorRepository())
 
@@ -60,7 +60,7 @@ func main() {
 				
 				config.Load(team)
 				
-				if err := action.SetupContext(team, access_token); err != nil { panic(err) }
+				if err := action.SetupContext(team, access_token, false); err != nil { panic(err) }
 
 				repo			:= action.ProcessorRepository()
 				processor_name	:= "sync"
@@ -84,7 +84,7 @@ func main() {
 				
 				config.Load(team)
 				
-				if err := action.SetupContext(team, access_token); err != nil { panic(err) }
+				if err := action.SetupContext(team, access_token, false); err != nil { panic(err) }
 
 				repo			:= action.ProcessorRepository()
 				processor_name	:= "members"
