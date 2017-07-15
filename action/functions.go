@@ -2,6 +2,7 @@ package action
 
 import (
 	"fmt"
+	"os"
 	"io"
 	"io/ioutil"
 	"encoding/json"
@@ -32,8 +33,14 @@ func GetPostLockPath(number_as_string string) string {
 func SavePost(post *esa.PostResponse) error {
 	log.WithFields(log.Fields{ "path": post.FullName }).Debug("start to save post")
 
+	post_number := strconv.Itoa(post.Number)
+	
+	for _, file_path := range FindPostDataPath(Context.Root(), post_number) {
+		if err := os.Remove(file_path); err != nil { return err }
+	}
+	
 	util.EnsureDir(AbsolutePathOf("/"+post.Category))
-	err := util.CreateFile(GetPostBodyPath(strconv.Itoa(post.Number)), post.BodyMd)
+	err := util.CreateFile(GetPostBodyPath(post_number), post.BodyMd)
 	if err != nil { return err }
 
 	post.BodyMd = ""
@@ -42,7 +49,7 @@ func SavePost(post *esa.PostResponse) error {
 	post_json_data, err := json.MarshalIndent(post, "", "\t")
 	if err != nil { return err }
 	
-	err = util.CreateFile(GetPostDataPath(post.Category, strconv.Itoa(post.Number)), string(post_json_data))
+	err = util.CreateFile(GetPostDataPath(post.Category, post_number), string(post_json_data))
 	if err != nil { return err }
 
 	return nil
@@ -134,4 +141,18 @@ func pipePeco(provider func(*io.PipeWriter)) (string, error) {
 	if err != nil { return "", err }
 
 	return strings.TrimRight(string(bytes), "\n"), nil
+}
+
+func FindPostDataPath(abs_path string, number_as_string string) []string {
+	ret := []string{}
+	
+	for _, node := range util.GetNodes(abs_path) {
+		if node.IsDir() {
+			ret = append(ret, FindPostDataPath(filepath.Join(abs_path, node.Name()), number_as_string)...)
+		} else if node.Name() == number_as_string {
+			ret = append(ret, filepath.Join(abs_path, number_as_string))
+		}
+	}
+
+	return ret
 }
