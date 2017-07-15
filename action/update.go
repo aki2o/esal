@@ -3,17 +3,22 @@ package action
 import (
 	"flag"
 	"errors"
-	"strconv"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"strings"
+	"regexp"
 	"github.com/aki2o/go-esa/esa"
 )
 
 type update struct {
 	pecolize bool
 	recursive bool
+	wip bool
+	ship bool
+	tags string
+	category string
 }
 
 func init() {
@@ -23,6 +28,10 @@ func init() {
 func (self *update) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
 	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
+	flagset.BoolVar(&self.wip, "wip", false, "Update the post as wip.")
+	flagset.BoolVar(&self.ship, "ship", false, "Ship the post.")
+	flagset.StringVar(&self.tags, "tags", "", "Tag names separated comma.")
+	flagset.StringVar(&self.category, "category", "", "Category.")
 }
 
 func (self *update) Do(args []string) error {
@@ -59,14 +68,26 @@ func (self *update) Do(args []string) error {
 	
 	lock_bytes, err := LoadPostLock(post_number)
 	if err != nil { lock_bytes = body_bytes }
+
+	wip := postres.Wip
+	if self.wip { wip = false }
+	if self.ship { wip = true }
+
+	tags := postres.Tags
+	if self.tags != "" { tags = strings.Split(self.tags, ",") }
+
+	category := postres.Category
+	if self.category != "" {
+		re, _ := regexp.Compile("^/")
+		category = re.ReplaceAllString(self.category, "")
+	}
 	
 	post := esa.Post{
 		Name: postres.Name,
 		BodyMd: string(body_bytes),
-		Tags: postres.Tags,
-		Category: postres.Category,
-		Wip: postres.Wip,
-		// UpdatedBy: "",
+		Tags: tags,
+		Category: category,
+		Wip: wip,
 		OriginalRevision: esa.PostOriginalRevision {
 			BodyMd: string(lock_bytes),
 			Number: postres.RevisionNumber,
