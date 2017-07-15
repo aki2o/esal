@@ -19,6 +19,7 @@ type update struct {
 	ship bool
 	tags string
 	category string
+	message string
 }
 
 func init() {
@@ -32,6 +33,7 @@ func (self *update) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.ship, "ship", false, "Ship the post.")
 	flagset.StringVar(&self.tags, "tags", "", "Tag names separated comma.")
 	flagset.StringVar(&self.category, "category", "", "Category.")
+	flagset.StringVar(&self.message, "m", "Update post.", "Commit message.")
 }
 
 func (self *update) Do(args []string) error {
@@ -88,6 +90,7 @@ func (self *update) Do(args []string) error {
 		Tags: tags,
 		Category: category,
 		Wip: wip,
+		Message: self.message,
 		OriginalRevision: esa.PostOriginalRevision {
 			BodyMd: string(lock_bytes),
 			Number: postres.RevisionNumber,
