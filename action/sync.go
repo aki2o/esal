@@ -17,6 +17,7 @@ import (
 type sync struct {
 	all bool
 	force bool
+	by_number bool
 	progress_bars map[string]*pb.ProgressBar
 }
 
@@ -27,6 +28,7 @@ func init() {
 func (self *sync) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.all, "a", false, "Exec for all config.")
 	flagset.BoolVar(&self.force, "f", false, "Exec with ignore last synchronized time.")
+	flagset.BoolVar(&self.by_number, "number", false, "Exec for only posts of numbers given as arguments.")
 }
 
 func (self *sync) Do(args []string) error {
@@ -34,6 +36,39 @@ func (self *sync) Do(args []string) error {
 		return errors.New("Require query name!")
 	}
 
+	if self.by_number {
+		return self.DoByNumber(args)
+	} else {
+		return self.DoByQuery(args)
+	}
+}
+
+func (self *sync) DoByNumber(args []string) error {
+	for _, path := range args {
+		_, post_number := DirectoryPathAndPostNumberOf(path)
+		if post_number == "" {
+			fmt.Fprintf(os.Stderr, "Unknown post number : %s", path)
+			continue
+		}
+
+		post_number_as_int, _ := strconv.Atoi(post_number)
+		post, err := Context.Client.Post.GetPost(Context.Team, post_number_as_int)
+		if err != nil {
+			log.WithFields(log.Fields{ "number": post_number, "error": err.Error() }).Error("failed to fetch post")
+			fmt.Fprintf(os.Stderr, "Failed to fetch post %s\n", post_number)
+			continue
+		}
+		
+		if err = SavePost(post); err != nil {
+			log.WithFields(log.Fields{ "number": post.Number, "full_name": post.FullName, "error": err.Error() }).Error("failed to save post")
+			fmt.Fprintf(os.Stderr, "Failed to save post %d: %s\n", post.Number, post.FullName)
+			continue
+		}
+	}
+	return nil
+}
+
+func (self *sync) DoByQuery(args []string) error {
 	pool, err := self.setupProgressBars(args)
 	if err != nil { return err }
 	defer pool.Stop()
