@@ -19,7 +19,7 @@ import (
 )
 
 func GetPostDataPath(category string, number_as_string string) string {
-	return filepath.Join(AbsolutePathOf(category), number_as_string)
+	return filepath.Join(PhysicalPathOf(category), number_as_string)
 }
 
 func GetPostBodyPath(number_as_string string) string {
@@ -49,7 +49,7 @@ func SavePost(post *esa.PostResponse) error {
 	post_json_data, err := json.MarshalIndent(post, "", "\t")
 	if err != nil { return err }
 	
-	util.EnsureDir(AbsolutePathOf("/"+post.Category))
+	util.EnsureDir(PhysicalPathOf("/"+post.Category))
 	err = util.CreateFile(GetPostDataPath(post.Category, post_number), string(post_json_data))
 	if err != nil { return err }
 
@@ -79,7 +79,7 @@ func ExcludePostName(path string) string {
 	}
 }
 
-func AbsolutePathOf(path string) string {
+func PhysicalPathOf(path string) string {
 	path = ExcludePostName(path)
 	if path == "" {	return Context.Cwd }
 	

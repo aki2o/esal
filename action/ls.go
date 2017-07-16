@@ -40,7 +40,7 @@ func (self *ls) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 	
-	self.printNodesIn(path, AbsolutePathOf(path))
+	self.printNodesIn(path, PhysicalPathOf(path))
 	return nil
 }
 

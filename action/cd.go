@@ -30,9 +30,9 @@ func (self *cd) Do(args []string) error {
 		next_path, err := self.runPeco(path)
 		if err != nil { return err }
 
-		next_abs_path = AbsolutePathOf(next_path)
+		next_abs_path = PhysicalPathOf(next_path)
 	} else {
-		next_abs_path = AbsolutePathOf(path)
+		next_abs_path = PhysicalPathOf(path)
 	}
 	
 	info, err := os.Stat(next_abs_path)
@@ -50,7 +50,7 @@ func (self *cd) runPeco(path string) (string, error) {
 		defer writer.Close()
 		
 		ls := &ls{ writer: writer, recursive: true, directory_only: true }
-		ls.printNodesIn(path, AbsolutePathOf(path))
+		ls.printNodesIn(path, PhysicalPathOf(path))
 	}
 
 	return pipePeco(provider)

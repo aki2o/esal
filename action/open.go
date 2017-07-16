@@ -38,7 +38,7 @@ func (self *open) Do(args []string) error {
 		return errors.New("Require path!")
 	}
 
-	real_path := AbsolutePathOf(path)+".md"
+	real_path := PhysicalPathOf(path)+".md"
 	before_file_info, err := os.Stat(real_path)
 	if err != nil { return err }
 
@@ -72,7 +72,7 @@ func (self *open) runPeco(path string) (string, error) {
 		defer writer.Close()
 		
 		ls := &ls{ writer: writer, recursive: self.recursive, file_only: true }
-		ls.printNodesIn(path, AbsolutePathOf(path))
+		ls.printNodesIn(path, PhysicalPathOf(path))
 	}
 
 	return pipePeco(provider)

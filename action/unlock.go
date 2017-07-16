@@ -51,7 +51,7 @@ func (self *unlock) runPeco(path string) (string, error) {
 		defer writer.Close()
 		
 		ls := &ls{ writer: writer, recursive: self.recursive, file_only: true }
-		ls.printNodesIn(path, AbsolutePathOf(path))
+		ls.printNodesIn(path, PhysicalPathOf(path))
 	}
 
 	return pipePeco(provider)
