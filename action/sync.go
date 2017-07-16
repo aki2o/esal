@@ -76,15 +76,15 @@ func (self *sync) DoByQuery(args []string) error {
 	query_configs := make([]config.Query, len(config.Team.Queries))
 	
 	for index, query_config := range config.Team.Queries {
-		if !self.isTarget(query_config, args) { continue }
-
-		err := self.processQuery(query_config)
-		if err == nil {
-			query_config.SynchronizedAt = time.Now()
-		} else {
-			util.PutError(err)
+		if self.isTarget(query_config, args) {
+			err := self.processQuery(query_config)
+			if err == nil {
+				query_config.SynchronizedAt = time.Now()
+			} else {
+				util.PutError(err)
+			}
 		}
-		
+
 		query_configs[index] = query_config
 	}
 
