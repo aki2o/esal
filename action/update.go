@@ -19,6 +19,7 @@ type update struct {
 	ship bool
 	tags string
 	category string
+	post_name string
 	message string
 }
 
@@ -33,6 +34,7 @@ func (self *update) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.ship, "ship", false, "Ship the post.")
 	flagset.StringVar(&self.tags, "tags", "", "Tag names separated comma.")
 	flagset.StringVar(&self.category, "category", "", "Category.")
+	flagset.StringVar(&self.post_name, "name", "", "Name of the post.")
 	flagset.StringVar(&self.message, "m", "Update post.", "Commit message.")
 }
 
@@ -72,8 +74,8 @@ func (self *update) Do(args []string) error {
 	if err != nil { lock_bytes = body_bytes }
 
 	wip := postres.Wip
-	if self.wip { wip = false }
-	if self.ship { wip = true }
+	if self.wip { wip = true }
+	if self.ship { wip = false }
 
 	tags := postres.Tags
 	if self.tags != "" { tags = strings.Split(self.tags, ",") }
@@ -83,9 +85,12 @@ func (self *update) Do(args []string) error {
 		re, _ := regexp.Compile("^/")
 		category = re.ReplaceAllString(self.category, "")
 	}
+
+	post_name := postres.Name
+	if self.post_name != "" { post_name = self.post_name }
 	
 	post := esa.Post{
-		Name: postres.Name,
+		Name: post_name,
 		BodyMd: string(body_bytes),
 		Tags: tags,
 		Category: category,
