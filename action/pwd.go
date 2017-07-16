@@ -3,6 +3,8 @@ package action
 import (
 	"flag"
 	"fmt"
+	"strings"
+	"os"
 )
 
 type pwd struct {}
@@ -15,6 +17,10 @@ func (self *pwd) SetOption(flagset *flag.FlagSet) {
 }
 
 func (self *pwd) Do(args []string) error {
-	fmt.Println(Context.Cwd)
+	separator := string(os.PathSeparator)
+	root_dirs := strings.Split(Context.Root(), separator)
+	curr_dirs := strings.Split(Context.Cwd, separator)[len(root_dirs):]
+
+	fmt.Println("/"+strings.Join(curr_dirs, separator))
 	return nil
 }
