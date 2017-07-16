@@ -39,7 +39,7 @@ func SavePost(post *esa.PostResponse) error {
 		if err := os.Remove(file_path); err != nil { return err }
 	}
 	
-	util.EnsureDir(AbsolutePathOf("/"+post.Category))
+	util.EnsureDir(Context.BodyRoot())
 	err := util.CreateFile(GetPostBodyPath(post_number), post.BodyMd)
 	if err != nil { return err }
 
@@ -49,6 +49,7 @@ func SavePost(post *esa.PostResponse) error {
 	post_json_data, err := json.MarshalIndent(post, "", "\t")
 	if err != nil { return err }
 	
+	util.EnsureDir(AbsolutePathOf("/"+post.Category))
 	err = util.CreateFile(GetPostDataPath(post.Category, post_number), string(post_json_data))
 	if err != nil { return err }
 
