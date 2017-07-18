@@ -47,21 +47,21 @@ func (self *sync) DoByNumber(args []string) error {
 	for _, path := range args {
 		_, post_number := DirectoryPathAndPostNumberOf(path)
 		if post_number == "" {
-			fmt.Fprintf(os.Stderr, "Unknown post number : %s", path)
+			fmt.Fprintf(os.Stderr, "Unknown post number of '%s'!", path)
 			continue
 		}
 
 		post_number_as_int, _ := strconv.Atoi(post_number)
 		post, err := Context.Client.Post.GetPost(Context.Team, post_number_as_int)
 		if err != nil {
-			log.WithFields(log.Fields{ "number": post_number, "error": err.Error() }).Error("failed to fetch post")
-			fmt.Fprintf(os.Stderr, "Failed to fetch post %s\n", post_number)
+			log.WithFields(log.Fields{ "path": path, "number": post_number, "error": err.Error() }).Error("failed to fetch post")
+			fmt.Fprintf(os.Stderr, "Failed to fetch post '%s' : %s\n", path, err.Error())
 			continue
 		}
 		
 		if err = SavePost(post); err != nil {
 			log.WithFields(log.Fields{ "number": post.Number, "full_name": post.FullName, "error": err.Error() }).Error("failed to save post")
-			fmt.Fprintf(os.Stderr, "Failed to save post %d: %s\n", post.Number, post.FullName)
+			fmt.Fprintf(os.Stderr, "Failed to save post '%d: %s' : %s\n", post.Number, post.FullName, err.Error())
 			continue
 		}
 	}
@@ -178,13 +178,13 @@ func (self *sync) processQuery(query_config config.Query) error {
 			
 			if util.Exists(GetPostLockPath(strconv.Itoa(post.Number))) {
 				log.WithFields(log.Fields{ "number": post.Number }).Info("skip locked post")
-				fmt.Printf("Skip a locked post %d: %s\n", post.Number, post.FullName)
+				fmt.Printf("Skip a locked post '%d: %s'\n", post.Number, post.FullName)
 				continue
 			}
 			
 			if err = SavePost(&post); err != nil {
 				log.WithFields(log.Fields{ "number": post.Number, "full_name": post.FullName, "error": err.Error() }).Error("failed to save post")
-				fmt.Fprintf(os.Stderr, "Failed to save post %d: %s\n", post.Number, post.FullName)
+				fmt.Fprintf(os.Stderr, "Failed to save post '%d: %s' : %s\n", post.Number, post.FullName, err.Error())
 			}
 			progress_bar.Increment()
 		}
