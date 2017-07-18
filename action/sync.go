@@ -77,11 +77,8 @@ func (self *sync) DoByQuery(args []string) error {
 	
 	for index, query_config := range config.Team.Queries {
 		if self.isTarget(query_config, args) {
-			err := self.processQuery(query_config)
-			if err == nil {
+			if self.processQuery(query_config) {
 				query_config.SynchronizedAt = time.Now()
-			} else {
-				util.PutError(err)
 			}
 		}
 
@@ -132,11 +129,12 @@ func (self *sync) getProgressBar(name string) *pb.ProgressBar {
 	return self.progress_bars[name]
 }
 
-func (self *sync) processQuery(query_config config.Query) error {
+func (self *sync) processQuery(query_config config.Query) bool {
 	fetched_count	:= 0
 	total_count		:= 1
 	page_index		:= 1
 	progress_bar	:= self.getProgressBar(query_config.Name)
+	success			:= true
 	
 	defer progress_bar.Finish()
 	
@@ -161,10 +159,18 @@ func (self *sync) processQuery(query_config config.Query) error {
 		
 		log.WithFields(log.Fields{ "page": page_index, "fetched_count": fetched_count }).Debug("get post")
 		res, err := Context.Client.Post.GetPosts(Context.Team, query)
-		if err != nil { return err }
+		if err != nil {
+			log.WithFields(log.Fields{ "page": page_index, "fetched_count": fetched_count, "error": err.Error() }).Error("failed to fetch post")
+			fmt.Fprintf(os.Stderr, "Failed to fetch posts : %s\n", err.Error())
+			return false
+		}
 		log.WithFields(log.Fields{ "next_page": res.NextPage }).Debug("got post")
 
-		if err := util.EnsureDir(Context.Root()); err != nil { return err }
+		if err := util.EnsureDir(Context.Root()); err != nil {
+			log.WithFields(log.Fields{ "path": Context.Root(), "error": err.Error() }).Error("failed to ensure dir")
+			fmt.Fprintf(os.Stderr, "Failed to ensure local directory : %s\n", err.Error())
+			return false
+		}
 
 		if total_count == 1 {
 			log.WithFields(log.Fields{ "total_count": res.TotalCount }).Debug("set total")
@@ -185,6 +191,7 @@ func (self *sync) processQuery(query_config config.Query) error {
 			if err = SavePost(&post); err != nil {
 				log.WithFields(log.Fields{ "number": post.Number, "full_name": post.FullName, "error": err.Error() }).Error("failed to save post")
 				fmt.Fprintf(os.Stderr, "Failed to save post '%d: %s' : %s\n", post.Number, post.FullName, err.Error())
+				success = false
 			}
 			progress_bar.Increment()
 		}
@@ -193,5 +200,5 @@ func (self *sync) processQuery(query_config config.Query) error {
 	}
 
 	log.Info("finished to fetch post "+Context.Team+":"+query_config.Name)
-	return nil
+	return success
 }
