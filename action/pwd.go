@@ -15,6 +15,6 @@ func (self *pwd) SetOption(flagset *flag.FlagSet) {
 }
 
 func (self *pwd) Do(args []string) error {
-	fmt.Println(CategoryOf(Context.Cwd))
+	fmt.Println("/"+CategoryOf(Context.Cwd))
 	return nil
 }

@@ -84,7 +84,7 @@ func CategoryOf(physical_path string) string {
 	root_dirs := strings.Split(Context.Root(), separator)
 	curr_dirs := strings.Split(physical_path, separator)[len(root_dirs):]
 
-	return "/"+strings.Join(curr_dirs, "/")
+	return strings.Join(curr_dirs, "/")
 }
 
 func PhysicalPathOf(path string) string {
