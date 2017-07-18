@@ -36,7 +36,7 @@ func (self *cd) Do(args []string) error {
 	}
 	
 	info, err := os.Stat(next_abs_path)
-	if err != nil { return err }
+	if err != nil { return fmt.Errorf("Failed to get stat of '%s' : %s", next_abs_path, err.Error()) }
 	if ! info.IsDir() { return fmt.Errorf("Not directory : %s", next_abs_path) }
 
 	Context.Cwd = next_abs_path
