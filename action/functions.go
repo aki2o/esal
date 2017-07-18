@@ -79,6 +79,14 @@ func ExcludePostName(path string) string {
 	}
 }
 
+func CategoryOf(physical_path string) string {
+	separator := string(os.PathSeparator)
+	root_dirs := strings.Split(Context.Root(), separator)
+	curr_dirs := strings.Split(physical_path, separator)[len(root_dirs):]
+
+	return "/"+strings.Join(curr_dirs, "/")
+}
+
 func PhysicalPathOf(path string) string {
 	path = ExcludePostName(path)
 	if path == "" {	return Context.Cwd }
