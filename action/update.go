@@ -147,15 +147,17 @@ func (self *update) setName(new_post *esa.Post, post *esa.PostResponse) {
 }
 
 func (self *update) setBody(new_post *esa.Post, post_number string) error {
-	if self.nobody { return nil }
-	
 	body_bytes, err := LoadPostBody(post_number)
 	if err != nil { return err }
 	
 	lock_bytes, err := LoadPostLock(post_number)
 	if err != nil { lock_bytes = body_bytes }
 
-	new_post.BodyMd = string(body_bytes)
+	if self.nobody {
+		new_post.BodyMd = string(lock_bytes)
+	} else {
+		new_post.BodyMd = string(body_bytes)
+	}
 	new_post.OriginalRevision.BodyMd = string(lock_bytes)
 	return nil
 }
