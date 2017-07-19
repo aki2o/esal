@@ -21,12 +21,12 @@ func (self *mv) Do(args []string) error {
 	if len(args) < 2 { return errors.New("Require posts, categories and category as destination!") }
 
 	dest_path := args[len(args)-1]
-	dest_category := CategoryOf(PhysicalPathOf(dest_path))
+	dest_category := "/"+CategoryOf(PhysicalPathOf(dest_path))
 
 	for _, path := range args[:len(args)-1] {
 		dir_path, post_number := DirectoryPathAndPostNumberOf(path)
 		if post_number == "" {
-			category := CategoryOf(PhysicalPathOf(dir_path))
+			category := "/"+CategoryOf(PhysicalPathOf(dir_path))
 
 			log.WithFields(log.Fields{ "from": category, "to": dest_category }).Debug("request batch move")
 			err := Context.Client.Category.BatchMove(Context.Team, category, dest_category)
