@@ -25,12 +25,20 @@ func main() {
 		{
 			Name: "login",
 			Usage: "Start prompt to access posts.",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name: "access_token, a",
+					Usage: "esa access_token for team",
+				},
+			},
 			Action: func(ctx *cli.Context) error {
 				team := ctx.Args().First()
-				access_token := os.Getenv("ESA_CUI_ACCESS_TOKEN")
 				
 				config.Load(team)
 				
+				access_token := ctx.String("access_token")
+				if access_token == "" { access_token = util.ReadAccessToken() }
+
 				if err := action.SetupContext(team, access_token, true); err != nil { panic(err) }
 
 				util.ProcessInteractive("action", action.ProcessorRepository())
@@ -56,10 +64,12 @@ func main() {
 			Usage: "Synchronize posts.",
 			Action: func(ctx *cli.Context) error {
 				team := ctx.Args().First()
-				access_token := os.Getenv("ESA_CUI_ACCESS_TOKEN")
 				
 				config.Load(team)
 				
+				access_token := ctx.String("access_token")
+				if access_token == "" { access_token = util.ReadAccessToken() }
+
 				if err := action.SetupContext(team, access_token, false); err != nil { panic(err) }
 
 				repo			:= action.ProcessorRepository()
@@ -80,10 +90,12 @@ func main() {
 			Usage: "Print members.",
 			Action: func(ctx *cli.Context) error {
 				team := ctx.Args().First()
-				access_token := os.Getenv("ESA_CUI_ACCESS_TOKEN")
 				
 				config.Load(team)
 				
+				access_token := ctx.String("access_token")
+				if access_token == "" { access_token = util.ReadAccessToken() }
+
 				if err := action.SetupContext(team, access_token, false); err != nil { panic(err) }
 
 				repo			:= action.ProcessorRepository()

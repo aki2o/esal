@@ -28,6 +28,7 @@ type TeamConfig struct {
 
 type Config struct {
 	Teams []TeamConfig `json:"teams"`
+	PecoPreferred bool `json:"peco_preferred"`
 }
 
 var config_path string = filepath.Join(util.LocalRootPath(), "config.json")
@@ -76,7 +77,7 @@ func Save() {
 
 func loadConfig() *Config {
 	if ! util.Exists(config_path) {
-		return &Config{}
+		return &Config{ PecoPreferred: true }
 	}
 
 	var config Config

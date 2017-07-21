@@ -4,7 +4,10 @@ import (
 	"os"
 	"io/ioutil"
 	"bufio"
+	"fmt"
 	"path/filepath"
+	"syscall"
+	"golang.org/x/crypto/ssh/terminal"
 	log "github.com/sirupsen/logrus"
 	"github.com/abiosoft/ishell"
 )
@@ -67,6 +70,14 @@ func CreateFile(path string, body string) error {
 	writer.Flush()
 
 	return nil
+}
+
+func ReadAccessToken() string {
+	fmt.Print("Enter access_token: ")
+	bytes, err := terminal.ReadPassword(int(syscall.Stdin))
+	if err != nil { panic(err) }
+
+	return string(bytes)
 }
 
 func ProcessInteractive(name string, repo *ProcessorRepository) {
