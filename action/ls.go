@@ -79,7 +79,7 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 }
 
 func (self *ls) makeDirLine(path string) string {
-	return self.makePostStatPart(path, nil)+path
+	return self.makePostStatPart(path, nil)+path+"/"
 }
 
 func (self *ls) makeFileLine(path string, post *esa.PostResponse) string {
