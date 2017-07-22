@@ -27,8 +27,11 @@ func main() {
 			Usage: "Start prompt to access posts.",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "access_token, a",
+					Name: "access-token, a",
 					Usage: "esa access_token for team",
+				},
+				cli.BoolFlag{
+					Name: "non-interactive",
 				},
 			},
 			Action: func(ctx *cli.Context) error {
@@ -36,12 +39,16 @@ func main() {
 				
 				config.Load(team)
 				
-				access_token := ctx.String("access_token")
+				access_token := ctx.String("access-token")
 				if access_token == "" { access_token = util.ReadAccessToken() }
 
 				if err := action.SetupContext(team, access_token, true); err != nil { panic(err) }
 
-				util.ProcessInteractive("action", action.ProcessorRepository())
+				if ctx.Bool("non-interactive") {
+					util.ProcessNonInteractive("action", action.ProcessorRepository())
+				} else {
+					util.ProcessInteractive("action", action.ProcessorRepository())
+				}
 
 				return nil
 			},

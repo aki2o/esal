@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"path/filepath"
 	"syscall"
+	"strings"
+	"errors"
+	"flag"
 	"golang.org/x/crypto/ssh/terminal"
 	log "github.com/sirupsen/logrus"
 	"github.com/abiosoft/ishell"
@@ -101,4 +104,39 @@ func ProcessInteractive(name string, repo *ProcessorRepository) {
 	}
 
 	shell.Run()
+}
+
+func ProcessNonInteractive(name string, repo *ProcessorRepository) {
+	for {
+		fmt.Print("\u0003")
+		
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		
+		args := strings.Split(strings.TrimSpace(scanner.Text()), " ")
+
+		if len(args) == 0 { continue }
+		if args[0] == "exit" { break }
+		
+		processor := repo.GetProcessor(args[0])
+		if processor == nil {
+			PutError(errors.New("Unknown command!"))
+			continue
+		}
+
+		flagset := flag.NewFlagSet(args[0], flag.PanicOnError)
+		processor.SetOption(flagset)
+
+		err := flagset.Parse(args[1:])
+		if err != nil {
+			PutError(err)
+			continue
+		}
+
+		err = processor.Do(flagset.Args())
+		if err != nil {
+			PutError(err)
+			continue
+		}
+	}
 }
