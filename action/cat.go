@@ -12,6 +12,7 @@ import (
 
 type cat struct {
 	json_format bool
+	without_indent bool
 	pecolize bool
 	recursive bool
 }
@@ -59,6 +60,7 @@ func init() {
 
 func (self *cat) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.json_format, "json", false, "Show properties as json.")
+	flagset.BoolVar(&self.without_indent, "noindent", false, "For json option, show without indent.")
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
 	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
 }
@@ -89,7 +91,12 @@ func (self *cat) Do(args []string) error {
 		post.LocalPath	= GetPostBodyPath(strconv.Itoa(post.Number))
 		post.Locked		= util.Exists(GetPostLockPath(strconv.Itoa(post.Number)))
 
-		json_bytes, _ := json.MarshalIndent(post, "", "\t")
+		var json_bytes []byte
+		if self.without_indent {
+			json_bytes, _ = json.Marshal(post)
+		} else {
+			json_bytes, _ = json.MarshalIndent(post, "", "\t")
+		}
 		
 		fmt.Println(string(json_bytes))
 	} else {
