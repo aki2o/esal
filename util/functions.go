@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"path/filepath"
 	"syscall"
-	"strings"
 	"errors"
 	"flag"
 	"golang.org/x/crypto/ssh/terminal"
 	log "github.com/sirupsen/logrus"
 	"github.com/abiosoft/ishell"
+	"github.com/flynn-archive/go-shlex"
 )
 
 func LocalRootPath() string {
@@ -112,8 +112,12 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 		
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
-		
-		args := strings.Split(strings.TrimSpace(scanner.Text()), " ")
+
+		args, err := shlex.Split(scanner.Text())
+		if err != nil {
+			PutError(err)
+			continue
+		}
 
 		if len(args) == 0 { continue }
 		if args[0] == "exit" { break }
@@ -127,7 +131,7 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 		flagset := flag.NewFlagSet(args[0], flag.PanicOnError)
 		processor.SetOption(flagset)
 
-		err := flagset.Parse(args[1:])
+		err = flagset.Parse(args[1:])
 		if err != nil {
 			PutError(err)
 			continue
