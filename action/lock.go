@@ -3,7 +3,6 @@ package action
 import (
 	"flag"
 	"errors"
-	"io"
 	"github.com/aki2o/esa-cui/util"
 )
 
@@ -26,7 +25,7 @@ func (self *lock) Do(args []string) error {
 	if len(args) > 0 { path = args[0] }
 
 	if self.pecolize {
-		next_path, err := self.runPeco(path)
+		next_path, err := selectNodeByPeco(path, false)
 		if err != nil { return err }
 
 		path = next_path
@@ -47,15 +46,4 @@ func (self *lock) Do(args []string) error {
 	if err != nil { return err }
 
 	return nil
-}
-
-func (self *lock) runPeco(path string) (string, error) {
-	provider := func(writer *io.PipeWriter) {
-		defer writer.Close()
-		
-		ls := &ls{ writer: writer, recursive: self.recursive, file_only: true }
-		ls.printNodesIn(path, PhysicalPathOf(path))
-	}
-
-	return pipePeco(provider)
 }

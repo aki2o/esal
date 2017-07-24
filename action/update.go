@@ -5,7 +5,6 @@ import (
 	"errors"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"regexp"
@@ -47,7 +46,7 @@ func (self *update) Do(args []string) error {
 	if len(args) > 0 { path = args[0] }
 
 	if self.pecolize {
-		next_path, err := self.runPeco(path)
+		next_path, err := selectNodeByPeco(path, false)
 		if err != nil { return err }
 
 		path = next_path
@@ -160,15 +159,4 @@ func (self *update) setBody(new_post *esa.Post, post_number string) error {
 	}
 	new_post.OriginalRevision.BodyMd = string(lock_bytes)
 	return nil
-}
-
-func (self *update) runPeco(path string) (string, error) {
-	provider := func(writer *io.PipeWriter) {
-		defer writer.Close()
-		
-		ls := &ls{ writer: writer, recursive: self.recursive, file_only: true }
-		ls.printNodesIn(path, PhysicalPathOf(path))
-	}
-
-	return pipePeco(provider)
 }

@@ -3,18 +3,14 @@ package action
 import (
 	"fmt"
 	"os"
-	"io"
 	"io/ioutil"
 	"encoding/json"
 	"path/filepath"
 	"strings"
 	"strconv"
 	"regexp"
-	"reflect"
-	"context"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
-	"github.com/peco/peco"
 	"github.com/aki2o/esa-cui/util"
 )
 
@@ -112,46 +108,6 @@ func DirectoryPathAndPostNumberOf(path string) (string, string) {
 	if len(matches) > 1 { post_number = matches[1] }
 	
 	return re.ReplaceAllString(path, ""), post_number
-}
-
-func pipePeco(provider func(*io.PipeWriter)) (string, error) {
-	from_provider_reader, to_peco_writer := io.Pipe()
-	
-	go provider(to_peco_writer)
-	
-	from_peco_reader, to_self_writer := io.Pipe()
-
-	go func() {
-		defer to_self_writer.Close()
-		
-		peco := peco.New()
-		peco.Argv	= []string{"--on-cancel", "error"}
-		peco.Stdin	= from_provider_reader
-		peco.Stdout = to_self_writer
-		
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
-		if err := peco.Run(ctx); err != nil {
-			// peco の終了を判断する機能が公開されていないので、 reflect を使って、無理矢理実装
-			err_type := reflect.ValueOf(err)
-			switch fmt.Sprintf("%s", err_type.Type()) {
-			case "peco.errCollectResults":
-				peco.PrintResults()
-				return
-			case "*peco.errWithExitStatus":
-				return
-			default:
-				log.Info(fmt.Sprintf("Peco return %s", err_type.Type()))
-				return
-			}
-		}
-	}()
-	
-	bytes, err := ioutil.ReadAll(from_peco_reader)
-	if err != nil { return "", err }
-
-	return strings.TrimRight(string(bytes), "\n"), nil
 }
 
 func FindPostDataPath(abs_path string, number_as_string string) []string {

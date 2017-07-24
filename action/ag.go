@@ -36,7 +36,7 @@ func (self *ag) Do(args []string) error {
 		provider := func(writer *io.PipeWriter) {
 			defer writer.Close()
 
-			out, err = exec.Command("ag", cmd_args...).Output()
+			out, err := exec.Command("ag", cmd_args...).Output()
 			if err != nil { return }
 
 			rich_writer := bufio.NewWriter(writer)
@@ -45,7 +45,7 @@ func (self *ag) Do(args []string) error {
 			rich_writer.Flush()
 		}
 
-		result, err = pipePeco(provider)
+		result, _, err = pipePeco(provider)
 	} else {
 		out, err = exec.Command("ag", cmd_args...).Output()
 		if err != nil { return err }

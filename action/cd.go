@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"flag"
 	"os"
-	"io"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +26,7 @@ func (self *cd) Do(args []string) error {
 
 	var next_abs_path string = ""
 	if self.pecolize {
-		next_path, err := self.runPeco(path)
+		next_path, err := selectNodeByPeco(path, true)
 		if err != nil { return err }
 
 		next_abs_path = PhysicalPathOf(next_path)
@@ -44,15 +43,3 @@ func (self *cd) Do(args []string) error {
 
 	return nil
 }
-
-func (self *cd) runPeco(path string) (string, error) {
-	provider := func(writer *io.PipeWriter) {
-		defer writer.Close()
-		
-		ls := &ls{ writer: writer, recursive: true, directory_only: true }
-		ls.printNodesIn(path, PhysicalPathOf(path))
-	}
-
-	return pipePeco(provider)
-}
-

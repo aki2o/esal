@@ -44,6 +44,8 @@ func main() {
 
 				if err := action.SetupContext(team, access_token, true); err != nil { panic(err) }
 
+				action.SetupPeco()
+				
 				if ctx.Bool("non-interactive") {
 					util.ProcessNonInteractive("action", action.ProcessorRepository())
 				} else {
