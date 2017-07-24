@@ -18,6 +18,7 @@ type sync struct {
 	all bool
 	force bool
 	by_number bool
+	quiet bool
 	progress_bars map[string]*pb.ProgressBar
 }
 
@@ -28,6 +29,7 @@ func init() {
 func (self *sync) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.all, "a", false, "Exec for all config.")
 	flagset.BoolVar(&self.force, "f", false, "Exec with ignore last synchronized time.")
+	flagset.BoolVar(&self.quiet, "q", false, "Exec quietly.")
 	flagset.BoolVar(&self.by_number, "number", false, "Exec for only posts of numbers given as arguments.")
 }
 
@@ -71,7 +73,7 @@ func (self *sync) DoByNumber(args []string) error {
 func (self *sync) DoByQuery(args []string) error {
 	pool, err := self.setupProgressBars(args)
 	if err != nil { return err }
-	defer pool.Stop()
+	if pool != nil { defer pool.Stop() }
 	
 	query_configs := make([]config.Query, len(config.Team.Queries))
 	
@@ -103,6 +105,8 @@ func (self *sync) isTarget(query config.Query, args []string) bool {
 }
 
 func (self *sync) setupProgressBars(args []string) (*pb.Pool, error) {
+	if self.quiet { return nil, nil }
+	
 	self.progress_bars = make(map[string]*pb.ProgressBar)
 	var bars = []*pb.ProgressBar{}
 	
@@ -136,7 +140,7 @@ func (self *sync) processQuery(query_config config.Query) bool {
 	progress_bar	:= self.getProgressBar(query_config.Name)
 	success			:= true
 	
-	defer progress_bar.Finish()
+	if progress_bar != nil { defer progress_bar.Finish() }
 	
 	log.Info("start to fetch post "+Context.Team+":"+query_config.Name)
 	for fetched_count < total_count {
@@ -175,8 +179,9 @@ func (self *sync) processQuery(query_config config.Query) bool {
 		if total_count == 1 {
 			log.WithFields(log.Fields{ "total_count": res.TotalCount }).Debug("set total")
 			
-			total_count			= res.TotalCount
-			progress_bar.Total	= int64(total_count)
+			total_count = res.TotalCount
+			
+			if progress_bar != nil { progress_bar.Total = int64(total_count) }
 		}
 		
 		for _, post := range res.Posts {
@@ -193,7 +198,8 @@ func (self *sync) processQuery(query_config config.Query) bool {
 				fmt.Fprintf(os.Stderr, "Failed to save post '%d: %s' : %s\n", post.Number, post.FullName, err.Error())
 				success = false
 			}
-			progress_bar.Increment()
+			
+			if progress_bar != nil { progress_bar.Increment() }
 		}
 
 		page_index += 1
