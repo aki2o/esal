@@ -8,7 +8,6 @@ import (
 
 type lock struct {
 	pecolize bool
-	recursive bool
 }
 
 func init() {

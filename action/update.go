@@ -13,7 +13,6 @@ import (
 
 type update struct {
 	pecolize bool
-	recursive bool
 	wip bool
 	ship bool
 	tags string

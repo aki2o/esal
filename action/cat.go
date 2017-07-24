@@ -13,7 +13,6 @@ type cat struct {
 	json_format bool
 	without_indent bool
 	pecolize bool
-	recursive bool
 }
 
 type postProperty struct {

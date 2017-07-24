@@ -13,7 +13,6 @@ import (
 
 type open struct {
 	pecolize bool
-	recursive bool
 	editor string
 }
 

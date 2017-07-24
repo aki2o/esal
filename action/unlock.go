@@ -9,7 +9,6 @@ import (
 
 type unlock struct {
 	pecolize bool
-	recursive bool
 }
 
 func init() {

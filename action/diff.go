@@ -10,7 +10,6 @@ import (
 
 type diff struct {
 	pecolize bool
-	recursive bool
 }
 
 func init() {
