@@ -71,7 +71,7 @@ func main() {
 			Usage: "Synchronize posts.",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "access_token, a",
+					Name: "access-token, a",
 					Usage: "esa access_token for team",
 				},
 			},
@@ -103,7 +103,7 @@ func main() {
 			Usage: "Print members.",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "access_token, a",
+					Name: "access-token, a",
 					Usage: "esa access_token for team",
 				},
 			},
