@@ -36,23 +36,23 @@ func (self *open) Do(args []string) error {
 		path = next_path
 	}
 
-	if path == "" {
-		return errors.New("Require path!")
+	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
+	if post_number == "" {
+		return errors.New("Require post number!")
 	}
 
 	editor := self.editor
 	if editor == "" { editor = os.Getenv("EDITOR") }
 
 	if editor != "" {
-		return self.openByEditor(path, editor)
+		return self.openByEditor(path, post_number, editor)
 	} else {
-		return self.openByBrowser(path)
+		return self.openByBrowser(dir_path, post_number)
 	}
 }
 
-func (self *open) openByEditor(path string, editor string) error {
-	_, post_number	:= DirectoryPathAndPostNumberOf(path)
-	real_path		:= GetPostBodyPath(post_number)
+func (self *open) openByEditor(path string, post_number string, editor string) error {
+	real_path := GetPostBodyPath(post_number)
 	
 	before_file_info, err := os.Stat(real_path)
 	if err != nil { return err }
@@ -82,9 +82,7 @@ func (self *open) openByEditor(path string, editor string) error {
 	return nil
 }
 
-func (self *open) openByBrowser(path string) error {
-	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
-	
+func (self *open) openByBrowser(dir_path string, post_number string) error {
 	bytes, err := LoadPostData(dir_path, post_number)
 	if err != nil { return err }
 
