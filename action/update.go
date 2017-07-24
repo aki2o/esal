@@ -30,7 +30,6 @@ func init() {
 
 func (self *update) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
-	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
 	flagset.BoolVar(&self.wip, "wip", false, "Update the post as wip.")
 	flagset.BoolVar(&self.ship, "ship", false, "Ship the post.")
 	flagset.StringVar(&self.tags, "tags", "", "Tag names separated comma.")

@@ -23,7 +23,6 @@ func init() {
 
 func (self *open) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
-	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
 	flagset.StringVar(&self.editor, "e", "", "Open with editor.")
 }
 

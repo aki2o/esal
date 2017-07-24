@@ -18,7 +18,6 @@ func init() {
 
 func (self *unlock) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
-	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
 }
 
 func (self *unlock) Do(args []string) error {

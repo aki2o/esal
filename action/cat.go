@@ -61,7 +61,6 @@ func (self *cat) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.json_format, "json", false, "Show properties as json.")
 	flagset.BoolVar(&self.without_indent, "noindent", false, "For json option, show without indent.")
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
-	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
 }
 
 func (self *cat) Do(args []string) error {

@@ -19,7 +19,6 @@ func init() {
 
 func (self *diff) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
-	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
 }
 
 func (self *diff) Do(args []string) error {
