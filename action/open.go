@@ -6,12 +6,16 @@ import (
 	"os"
 	"os/exec"
 	"io"
+	"encoding/json"
+	"runtime"
 	log "github.com/sirupsen/logrus"
+	"github.com/aki2o/go-esa/esa"
 )
 
 type open struct {
 	pecolize bool
 	recursive bool
+	editor string
 }
 
 func init() {
@@ -21,6 +25,7 @@ func init() {
 func (self *open) SetOption(flagset *flag.FlagSet) {
 	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
 	flagset.BoolVar(&self.recursive, "r", false, "Recursively for peco.")
+	flagset.StringVar(&self.editor, "e", "", "Open with editor.")
 }
 
 func (self *open) Do(args []string) error {
@@ -38,14 +43,38 @@ func (self *open) Do(args []string) error {
 		return errors.New("Require path!")
 	}
 
-	real_path := PhysicalPathOf(path)+".md"
+	editor := self.editor
+	if editor == "" { editor = os.Getenv("EDITOR") }
+
+	if editor != "" {
+		return self.openByEditor(path, editor)
+	} else {
+		return self.openByBrowser(path)
+	}
+}
+
+func (self *open) runPeco(path string) (string, error) {
+	provider := func(writer *io.PipeWriter) {
+		defer writer.Close()
+		
+		ls := &ls{ writer: writer, recursive: self.recursive, file_only: true }
+		ls.printNodesIn(path, PhysicalPathOf(path))
+	}
+
+	return pipePeco(provider)
+}
+
+func (self *open) openByEditor(path string, editor string) error {
+	_, post_number	:= DirectoryPathAndPostNumberOf(path)
+	real_path		:= GetPostBodyPath(post_number)
+	
 	before_file_info, err := os.Stat(real_path)
 	if err != nil { return err }
 
 	lock_process := &lock{}
 	if err := lock_process.Do([]string{ path }); err != nil { return err }
 	
-	cmd := exec.Command(os.Getenv("EDITOR"), real_path)
+	cmd := exec.Command(editor, real_path)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -67,13 +96,25 @@ func (self *open) Do(args []string) error {
 	return nil
 }
 
-func (self *open) runPeco(path string) (string, error) {
-	provider := func(writer *io.PipeWriter) {
-		defer writer.Close()
-		
-		ls := &ls{ writer: writer, recursive: self.recursive, file_only: true }
-		ls.printNodesIn(path, PhysicalPathOf(path))
+func (self *open) openByBrowser(path string) error {
+	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
+	
+	bytes, err := LoadPostData(dir_path, post_number)
+	if err != nil { return err }
+
+	var post esa.PostResponse
+	if err := json.Unmarshal(bytes, &post); err != nil { return err }
+
+	cmd := ""
+	if runtime.GOOS == "windows" {
+		cmd = "start"
+	} else if runtime.GOOS == "darwin" {
+		cmd = "open"
+	} else {
+		cmd = "xdg-open"
 	}
 
-	return pipePeco(provider)
+	if err := exec.Command(cmd, post.URL+"/edit").Run(); err != nil { return err }
+
+	return nil
 }
