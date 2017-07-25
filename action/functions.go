@@ -14,12 +14,16 @@ import (
 	"github.com/aki2o/esa-cui/util"
 )
 
-func GetPostDataPath(category string, number_as_string string) string {
+func GetCategoryPostPath(category string, number_as_string string) string {
 	return filepath.Join(PhysicalPathOf(category), number_as_string)
 }
 
 func GetPostBodyPath(number_as_string string) string {
 	return filepath.Join(Context.BodyRoot(), fmt.Sprintf("%s.md", number_as_string))
+}
+
+func GetPostDataPath(number_as_string string) string {
+	return filepath.Join(Context.BodyRoot(), fmt.Sprintf("%s.json", number_as_string))
 }
 
 func GetPostLockPath(number_as_string string) string {
@@ -42,20 +46,22 @@ func SavePost(post *esa.PostResponse) error {
 
 	post.BodyMd = ""
 	post.BodyHTML = ""
-	
+
 	post_json_data, err := json.MarshalIndent(post, "", "\t")
+	if err != nil { return err }
+	err = util.CreateFile(GetPostDataPath(post_number), string(post_json_data))
 	if err != nil { return err }
 	
 	err = util.EnsureDir(PhysicalPathOf("/"+post.Category))
 	if err != nil { return err }
-	err = util.CreateFile(GetPostDataPath("/"+post.Category, post_number), string(post_json_data))
+	err = util.CreateFile(GetCategoryPostPath("/"+post.Category, post_number), "")
 	if err != nil { return err }
 
 	return nil
 }
 
-func LoadPostData(category string, number_as_string string) ([]byte, error) {
-	return ioutil.ReadFile(GetPostDataPath(category, number_as_string))
+func LoadPostData(number_as_string string) ([]byte, error) {
+	return ioutil.ReadFile(GetPostDataPath(number_as_string))
 }
 
 func LoadPostBody(number_as_string string) ([]byte, error) {

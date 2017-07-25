@@ -73,13 +73,13 @@ func (self *cat) Do(args []string) error {
 		path = next_path
 	}
 
-	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
+	_, post_number := DirectoryPathAndPostNumberOf(path)
 	if post_number == "" {
 		return errors.New("Require post number!")
 	}
 
 	if self.json_format {
-		bytes, err := LoadPostData(dir_path, post_number)
+		bytes, err := LoadPostData(post_number)
 		if err != nil { return err }
 
 		var post postProperty

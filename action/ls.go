@@ -62,7 +62,7 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 			var post esa.PostResponse
 			
 			post_number := node.Name()
-			bytes, err := LoadPostData(path, post_number)
+			bytes, err := LoadPostData(post_number)
 			
 			if err == nil { err = json.Unmarshal(bytes, &post) }
 

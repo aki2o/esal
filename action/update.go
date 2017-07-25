@@ -50,12 +50,12 @@ func (self *update) Do(args []string) error {
 		path = next_path
 	}
 
-	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
+	_, post_number := DirectoryPathAndPostNumberOf(path)
 	if post_number == "" {
 		return errors.New("Require post number!")
 	}
 
-	post, err := self.loadPostDataWithVerify(dir_path, post_number)
+	post, err := self.loadPostDataWithVerify(post_number)
 	if err != nil { return err }
 	
 	new_post := esa.Post{
@@ -90,8 +90,8 @@ func (self *update) Do(args []string) error {
 	return nil
 }
 
-func (self *update) loadPostDataWithVerify(dir_path string, post_number string) (*esa.PostResponse, error) {
-	json_bytes, err := LoadPostData(dir_path, post_number)
+func (self *update) loadPostDataWithVerify(post_number string) (*esa.PostResponse, error) {
+	json_bytes, err := LoadPostData(post_number)
 	if err != nil { return nil, err }
 
 	var post esa.PostResponse

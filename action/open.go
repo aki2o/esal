@@ -36,7 +36,7 @@ func (self *open) Do(args []string) error {
 		path = next_path
 	}
 
-	dir_path, post_number := DirectoryPathAndPostNumberOf(path)
+	_, post_number := DirectoryPathAndPostNumberOf(path)
 	if post_number == "" {
 		return errors.New("Require post number!")
 	}
@@ -47,7 +47,7 @@ func (self *open) Do(args []string) error {
 	if editor != "" {
 		return self.openByEditor(path, post_number, editor)
 	} else {
-		return self.openByBrowser(dir_path, post_number)
+		return self.openByBrowser(post_number)
 	}
 }
 
@@ -82,8 +82,8 @@ func (self *open) openByEditor(path string, post_number string, editor string) e
 	return nil
 }
 
-func (self *open) openByBrowser(dir_path string, post_number string) error {
-	bytes, err := LoadPostData(dir_path, post_number)
+func (self *open) openByBrowser(post_number string) error {
+	bytes, err := LoadPostData(post_number)
 	if err != nil { return err }
 
 	var post esa.PostResponse
