@@ -20,7 +20,7 @@ type regist struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &regist{} }, "regist", "Regist a post.", "[OPTIONS] POST")
+	registProcessor(func() util.Processable { return &regist{} }, "regist", "Regist a post.", "[OPTIONS] FILE_PATH")
 }
 
 func (self *regist) Do(args []string) error {
@@ -66,6 +66,7 @@ func (self *regist) Do(args []string) error {
 
 	err = SavePost(res)
 	if err != nil { return err }
-	
+
+	fmt.Printf("Registed %d: %s.", res.Number, res.FullName)
 	return nil
 }
