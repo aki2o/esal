@@ -49,9 +49,9 @@ func (self *ProcessorRepository) SetProcessorGenerator(name string, processor fu
 	self.processor_generators[name] = processor
 }
 
-func (self *ProcessorRepository) NewProcessor(name string) Processable {
+func (self *ProcessorRepository) GetProcessorGenerator(name string) func() Processable {
 	self.setup()
-	return self.processor_generators[name]()
+	return self.processor_generators[name]
 }
 
 func (self *ProcessorRepository) SetDescription(name string, description string) {
@@ -75,7 +75,7 @@ func (self *ProcessorRepository) GetUsage(name string) string {
 }
 
 type IshellAdapter struct {
-	Processor Processable
+	ProcessorGenerator func() Processable
 	ProcessorName string
 	ProcessorDescription string
 	ProcessorUsage string
@@ -86,7 +86,8 @@ func (self *IshellAdapter) Adapt(ctx *ishell.Context) {
 }
 
 func (self *IshellAdapter) Run(args []string) {
-	parser := flags.NewParser(self.Processor, flags.Default)
+	processor := self.ProcessorGenerator()
+	parser := flags.NewParser(processor, flags.Default)
 	parser.Name = self.ProcessorName
 	parser.Usage = self.ProcessorUsage
 	
@@ -96,7 +97,7 @@ func (self *IshellAdapter) Run(args []string) {
 		return
 	}
 	
-	err = self.Processor.Do(args)
+	err = processor.Do(args)
 	if err != nil {
 		err_type := reflect.ValueOf(err)
 		switch fmt.Sprintf("%s", err_type.Type()) {

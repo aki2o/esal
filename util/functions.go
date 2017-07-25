@@ -88,12 +88,12 @@ func ProcessInteractive(name string, repo *ProcessorRepository) {
 	shell := ishell.New()
 
 	for _, processor_name := range repo.ProcessorNames() {
-		processor	:= repo.NewProcessor(processor_name)
-		description := repo.GetDescription(processor_name)
-		usage		:= repo.GetUsage(processor_name)
+		processor_generator	:= repo.GetProcessorGenerator(processor_name)
+		description			:= repo.GetDescription(processor_name)
+		usage				:= repo.GetUsage(processor_name)
 
 		adapter := &IshellAdapter{
-			Processor: processor,
+			ProcessorGenerator: processor_generator,
 			ProcessorName: processor_name,
 			ProcessorDescription: description,
 			ProcessorUsage: usage,
@@ -125,8 +125,8 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 		if len(args) == 0 { continue }
 		if args[0] == "exit" { break }
 
-		processor_name := args[0]
-		processor := repo.NewProcessor(processor_name)
+		processor_name	:= args[0]
+		processor		:= repo.GetProcessorGenerator(processor_name)()
 		if processor == nil {
 			PutError(errors.New("Unknown command!"))
 			continue
