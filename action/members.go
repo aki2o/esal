@@ -1,7 +1,6 @@
 package action
 
 import (
-	"flag"
 	"errors"
 	"path/filepath"
 	"encoding/json"
@@ -16,27 +15,21 @@ import (
 )
 
 type members struct {
-	refresh bool
-	name_print bool
-	email_print bool
+	WithRefresh bool `short:"r" long:"refresh" description:"Exec with ignore cache."`
+	NameRequired bool `short:"n" long:"name" description:"Print name."`
+	EmailRequired bool `short:"e" long:"email" description:"Print email."`
 }
 
 func init() {
-	addProcessor(&members{}, "members", "Print members.")
-}
-
-func (self *members) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.refresh, "r", false, "Exec with ignore cache.")
-	flagset.BoolVar(&self.name_print, "name", false, "Print name.")
-	flagset.BoolVar(&self.email_print, "email", false, "Print email.")
+	registProcessor(func() util.Processable { return &members{} }, "members", "Print members.", "[OPTIONS]")
 }
 
 func (self *members) Do(args []string) error {
 	members, err := self.load()
 	if err != nil { return err }
 
-	if self.refresh || len(members) == 0 {
-		if self.refresh {
+	if self.WithRefresh || len(members) == 0 {
+		if self.WithRefresh {
 			err = os.Remove(self.GetLocalStragePath())
 			if err != nil { return err }
 		}
@@ -51,8 +44,8 @@ func (self *members) Do(args []string) error {
 		var name string = ""
 		var email string = ""
 
-		if self.name_print { name = member.Name }
-		if self.email_print { email = member.Email }
+		if self.NameRequired { name = member.Name }
+		if self.EmailRequired { email = member.Email }
 		
 		fmt.Printf("%-30s%-15s%s\n", member.ScreenName, name, email)
 	}

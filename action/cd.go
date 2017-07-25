@@ -2,21 +2,17 @@ package action
 
 import (
 	"fmt"
-	"flag"
 	"os"
 	log "github.com/sirupsen/logrus"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type cd struct {
-	pecolize bool
+	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
 }
 
 func init() {
-	addProcessor(&cd{}, "cd", "Change working category.")
-}
-
-func (self *cd) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
+	registProcessor(func() util.Processable { return &cd{} }, "cd", "Change working category.", "[OPTIONS] CATEGORY")
 }
 
 func (self *cd) Do(args []string) error {
@@ -25,7 +21,7 @@ func (self *cd) Do(args []string) error {
 	if len(args) > 0 { path = args[0] }
 
 	var next_abs_path string = ""
-	if self.pecolize {
+	if self.Pecolize {
 		next_path, err := selectNodeByPeco(path, true)
 		if err != nil { return err }
 

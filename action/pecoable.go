@@ -103,7 +103,7 @@ func selectNodeByPeco(path string, directory_only bool) (string, error) {
 		provider := func(writer *io.PipeWriter) {
 			defer writer.Close()
 			
-			ls := &ls{ writer: writer, directory_only: directory_only }
+			ls := &ls{ writer: writer, DirectoryOnly: directory_only }
 			ls.printNodesIn(path, PhysicalPathOf(path))
 		}
 

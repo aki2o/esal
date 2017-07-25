@@ -1,7 +1,6 @@
 package action
 
 import (
-	"flag"
 	"os/exec"
 	"fmt"
 	"regexp"
@@ -10,18 +9,15 @@ import (
 	"errors"
 	"encoding/json"
 	"github.com/aki2o/go-esa/esa"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type ag struct {
-	pecolize bool
+	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
 }
 
 func init() {
-	addProcessor(&ag{}, "ag", "Execute ag command.")
-}
-
-func (self *ag) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
+	registProcessor(func() util.Processable { return &ag{} }, "ag", "Execute ag command.", "[OPTIONS] PATTERN")
 }
 
 func (self *ag) Do(args []string) error {
@@ -34,7 +30,7 @@ func (self *ag) Do(args []string) error {
 	var out []byte
 	var err error
 	
-	if self.pecolize {
+	if self.Pecolize {
 		provider := func(writer *io.PipeWriter) {
 			defer writer.Close()
 
@@ -57,7 +53,7 @@ func (self *ag) Do(args []string) error {
 	
 	if err != nil { return err }
 
-	if self.pecolize {
+	if self.Pecolize {
 		if result == "" { return nil }
 		
 		re, _ := regexp.Compile("^([0-9]+):[0-9]+:")

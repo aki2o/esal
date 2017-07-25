@@ -10,9 +10,10 @@ func ProcessorRepository() *util.ProcessorRepository {
 	return repo
 }
 
-func addProcessor(processor util.Processable, name string, usage string) {
+func registProcessor(processor_generator func() util.Processable, name string, description string, usage string) {
 	if repo == nil { repo = &util.ProcessorRepository{} }
 	
-	repo.SetProcessor(name, processor)
+	repo.SetProcessorGenerator(name, processor_generator)
+	repo.SetDescription(name, description)
 	repo.SetUsage(name, usage)
 }

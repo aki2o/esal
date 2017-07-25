@@ -1,7 +1,6 @@
 package action
 
 import (
-	"flag"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -18,22 +17,15 @@ import (
 )
 
 type ls struct {
+	LongFormatRequired bool `short:"l" long:"long" description:"Print long format."`
+	Recursive bool `short:"r" long:"recursive" description:"Exec recursively."`
+	DirectoryOnly bool `short:"d" long:"directory" description:"Print only directory."`
+	FileOnly bool `short:"f" long:"file" description:"Print only file."`
 	writer io.Writer
-	long_format bool
-	recursive bool
-	directory_only bool
-	file_only bool
 }
 
 func init() {
-	addProcessor(&ls{ writer: os.Stdout }, "ls", "Print a list of category and post information.")
-}
-
-func (self *ls) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.long_format, "l", false, "Print long format.")
-	flagset.BoolVar(&self.recursive, "r", false, "Recursively.")
-	flagset.BoolVar(&self.directory_only, "d", false, "Directory only.")
-	flagset.BoolVar(&self.file_only, "f", false, "File only.")
+	registProcessor(func() util.Processable { return &ls{ writer: os.Stdout } }, "ls", "Print a list of category and post information.", "[OPTIONS]")
 }
 
 func (self *ls) Do(args []string) error {
@@ -52,13 +44,13 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 		node_abs_path	:= filepath.Join(abs_path, node.Name())
 		
 		if node.IsDir() {
-			if ! self.file_only {
+			if ! self.FileOnly {
 				fmt.Fprintln(writer, self.makeDirLine(node_path))
 				writer.Flush()
 			}
 
-			if self.recursive { self.printNodesIn(node_path, node_abs_path) }
-		} else if ! self.directory_only {
+			if self.Recursive { self.printNodesIn(node_path, node_abs_path) }
+		} else if ! self.DirectoryOnly {
 			var post esa.PostResponse
 			
 			post_number := node.Name()
@@ -86,7 +78,7 @@ func (self *ls) makeFileLine(path string, post *esa.PostResponse) string {
 	post_number := strconv.Itoa(post.Number)
 
 	var name_part string
-	if self.long_format {
+	if self.LongFormatRequired {
 		var wip string = ""
 		var lock string = ""
 		var tag string = ""
@@ -104,7 +96,7 @@ func (self *ls) makeFileLine(path string, post *esa.PostResponse) string {
 }
 
 func (self *ls) makePostStatPart(path string, post *esa.PostResponse) string {
-	if !self.long_format { return "" }
+	if !self.LongFormatRequired { return "" }
 
 	var create_user		string = ""
 	var update_user		string = ""

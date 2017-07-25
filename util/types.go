@@ -1,29 +1,36 @@
 package util
 
 import (
-	"flag"
-	"fmt"
 	"os"
+	"reflect"
+	"fmt"
 	"github.com/abiosoft/ishell"
+	flags "github.com/jessevdk/go-flags"
 )
 
 type Processable interface {
-	SetOption(flagset *flag.FlagSet)
 	Do(args []string) error
 }
 
+type ProcessorHelpRequired struct {}
+
+func (self *ProcessorHelpRequired) Error() string {
+	return ""
+}
+
 type ProcessorRepository struct {
-	processors map[string]Processable
+	processor_generators map[string]func() Processable
+	descriptions map[string]string
 	usages map[string]string
 }
 
 func (self *ProcessorRepository) ProcessorNames() []string {
 	self.setup()
 	
-	var ret = make([]string, len(self.processors))
+	var ret = make([]string, len(self.processor_generators))
 	
 	index := 0
-	for name, _ := range self.processors {
+	for name, _ := range self.processor_generators {
 		ret[index] = name
 		index += 1
 	}
@@ -32,18 +39,29 @@ func (self *ProcessorRepository) ProcessorNames() []string {
 }
 
 func (self *ProcessorRepository) setup() {
-	if self.processors == nil { self.processors = make(map[string]Processable) }
+	if self.processor_generators == nil { self.processor_generators = make(map[string]func() Processable) }
+	if self.descriptions == nil { self.descriptions = make(map[string]string) }
 	if self.usages == nil { self.usages = make(map[string]string) }
 }
 
-func (self *ProcessorRepository) SetProcessor(name string, processor Processable) {
+func (self *ProcessorRepository) SetProcessorGenerator(name string, processor func() Processable) {
 	self.setup()
-	self.processors[name] = processor
+	self.processor_generators[name] = processor
 }
 
-func (self *ProcessorRepository) GetProcessor(name string) Processable {
+func (self *ProcessorRepository) NewProcessor(name string) Processable {
 	self.setup()
-	return self.processors[name]
+	return self.processor_generators[name]()
+}
+
+func (self *ProcessorRepository) SetDescription(name string, description string) {
+	self.setup()
+	self.descriptions[name] = description
+}
+
+func (self *ProcessorRepository) GetDescription(name string) string {
+	self.setup()
+	return self.descriptions[name]
 }
 
 func (self *ProcessorRepository) SetUsage(name string, usage string) {
@@ -59,6 +77,7 @@ func (self *ProcessorRepository) GetUsage(name string) string {
 type IshellAdapter struct {
 	Processor Processable
 	ProcessorName string
+	ProcessorDescription string
 	ProcessorUsage string
 }
 
@@ -67,28 +86,25 @@ func (self *IshellAdapter) Adapt(ctx *ishell.Context) {
 }
 
 func (self *IshellAdapter) Run(args []string) {
-	flagset := flag.NewFlagSet(self.ProcessorName, flag.PanicOnError)
+	parser := flags.NewParser(self.Processor, flags.Default)
+	parser.Name = self.ProcessorName
+	parser.Usage = self.ProcessorUsage
 	
-	var help_required bool = false
-	flagset.BoolVar(&help_required, "h", false, "Show help.")
-	
-	self.Processor.SetOption(flagset)
-	
-	err := flagset.Parse(args)
+	args, err := parser.ParseArgs(args)
 	if err != nil {
 		PutError(err)
 		return
 	}
-
-	if help_required {
-		fmt.Fprintf(os.Stderr, "%s: %s\n\nOptions:\n", self.ProcessorName, self.ProcessorUsage)
-		flagset.PrintDefaults()
-		return
-	}
 	
-	err = self.Processor.Do(flagset.Args())
+	err = self.Processor.Do(args)
 	if err != nil {
-		PutError(err)
+		err_type := reflect.ValueOf(err)
+		switch fmt.Sprintf("%s", err_type.Type()) {
+		case "util.ProcessorHelpRequired":
+			parser.WriteHelp(os.Stderr)
+		default:
+			PutError(err)
+		}
 		return
 	}
 }

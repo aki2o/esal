@@ -2,7 +2,6 @@ package action
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"encoding/json"
 	"strconv"
@@ -10,9 +9,9 @@ import (
 )
 
 type cat struct {
-	json_format bool
-	without_indent bool
-	pecolize bool
+	JsonRequired bool `short:"j" long:"json" description:"Show properties as json."`
+	WithoutIndent bool `short:"n" long:"noindent" description:"For json option, show without indent."`
+	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
 }
 
 type postProperty struct {
@@ -53,20 +52,14 @@ type postProperty struct {
 }
 
 func init() {
-	addProcessor(&cat{}, "cat", "Print a post body text as markdown.")
-}
-
-func (self *cat) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.json_format, "json", false, "Show properties as json.")
-	flagset.BoolVar(&self.without_indent, "noindent", false, "For json option, show without indent.")
-	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
+	registProcessor(func() util.Processable { return &cat{} }, "cat", "Print a post.", "[OPTIONS] POST")
 }
 
 func (self *cat) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 
-	if self.pecolize {
+	if self.Pecolize {
 		next_path, err := selectNodeByPeco(path, false)
 		if err != nil { return err }
 
@@ -78,7 +71,7 @@ func (self *cat) Do(args []string) error {
 		return errors.New("Require post number!")
 	}
 
-	if self.json_format {
+	if self.JsonRequired {
 		bytes, err := LoadPostData(post_number)
 		if err != nil { return err }
 
@@ -89,7 +82,7 @@ func (self *cat) Do(args []string) error {
 		post.Locked		= util.Exists(GetPostLockPath(strconv.Itoa(post.Number)))
 
 		var json_bytes []byte
-		if self.without_indent {
+		if self.WithoutIndent {
 			json_bytes, _ = json.Marshal(post)
 		} else {
 			json_bytes, _ = json.MarshalIndent(post, "", "\t")

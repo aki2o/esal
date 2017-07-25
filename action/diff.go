@@ -1,30 +1,26 @@
 package action
 
 import (
-	"flag"
 	"errors"
 	"strconv"
 	"fmt"
 	"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type diff struct {
-	pecolize bool
+	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
 }
 
 func init() {
-	addProcessor(&diff{}, "diff", "Diff a post between upstream and local.")
-}
-
-func (self *diff) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
+	registProcessor(func() util.Processable { return &diff{} }, "diff", "Diff a post between upstream and local.", "[OPTIONS] POST")
 }
 
 func (self *diff) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 
-	if self.pecolize {
+	if self.Pecolize {
 		next_path, err := selectNodeByPeco(path, false)
 		if err != nil { return err }
 

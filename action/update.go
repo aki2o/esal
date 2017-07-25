@@ -1,49 +1,36 @@
 package action
 
 import (
-	"flag"
 	"errors"
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"regexp"
 	"github.com/aki2o/go-esa/esa"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type update struct {
-	pecolize bool
-	wip bool
-	ship bool
-	tags string
-	category string
-	post_name string
-	message string
-	nobody bool
-	lock_keeping bool
+	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
+	Wip bool `short:"w" long:"wip" description:"Update the post as wip."`
+	Shipping bool `short:"s" long:"ship" description:"Ship the post."`
+	Tags []string `short:"t" long:"tag" description:"Tag name labeling tha post."`
+	Category string `short:"c" long:"category" description:"Category of the post."`
+	PostName string `short:"n" long:"name" description:"Name of the post."`
+	Message string `short:"m" long:"message" description:"Commit message."`
+	WithoutBody bool `short:"n" long:"nobody" description:"Exec without body."`
+	KeepLockRequired bool `short:"k" long:"keeplock" description:"Exec without unlock."`
 }
 
 func init() {
-	addProcessor(&update{}, "update", "Update a post.")
-}
-
-func (self *update) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
-	flagset.BoolVar(&self.wip, "wip", false, "Update the post as wip.")
-	flagset.BoolVar(&self.ship, "ship", false, "Ship the post.")
-	flagset.StringVar(&self.tags, "tags", "", "Tag names separated comma.")
-	flagset.StringVar(&self.category, "category", "", "Category.")
-	flagset.StringVar(&self.post_name, "name", "", "Name of the post.")
-	flagset.StringVar(&self.message, "m", "Update post.", "Commit message.")
-	flagset.BoolVar(&self.nobody, "nobody", false, "Exec without body.")
-	flagset.BoolVar(&self.lock_keeping, "keeplock", false, "Exec without unlock.")
+	registProcessor(func() util.Processable { return &update{} }, "update", "Update a post.", "[OPTIONS] POST")
 }
 
 func (self *update) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 
-	if self.pecolize {
+	if self.Pecolize {
 		next_path, err := selectNodeByPeco(path, false)
 		if err != nil { return err }
 
@@ -59,7 +46,7 @@ func (self *update) Do(args []string) error {
 	if err != nil { return err }
 	
 	new_post := esa.Post{
-		Message: self.message,
+		Message: self.Message,
 		OriginalRevision: esa.PostOriginalRevision {
 			Number: post.RevisionNumber,
 			User: post.UpdatedBy.ScreenName,
@@ -82,7 +69,7 @@ func (self *update) Do(args []string) error {
 	err = SavePost(res)
 	if err != nil { return err }
 	
-	if ! self.lock_keeping {
+	if ! self.KeepLockRequired {
 		unlock_process := &unlock{}
 		if err := unlock_process.Do([]string{ path }); err != nil { return err }
 	}
@@ -110,8 +97,8 @@ func (self *update) loadPostDataWithVerify(post_number string) (*esa.PostRespons
 func (self *update) setWip(new_post *esa.Post, post *esa.PostResponse) {
 	wip := post.Wip
 	
-	if self.wip { wip = true }
-	if self.ship { wip = false }
+	if self.Wip { wip = true }
+	if self.Shipping { wip = false }
 
 	new_post.Wip = wip
 }
@@ -119,7 +106,7 @@ func (self *update) setWip(new_post *esa.Post, post *esa.PostResponse) {
 func (self *update) setTags(new_post *esa.Post, post *esa.PostResponse) {
 	tags := post.Tags
 	
-	if self.tags != "" { tags = strings.Split(self.tags, ",") }
+	if len(self.Tags) > 0 { tags = self.Tags }
 
 	new_post.Tags = tags
 }
@@ -127,9 +114,9 @@ func (self *update) setTags(new_post *esa.Post, post *esa.PostResponse) {
 func (self *update) setCategory(new_post *esa.Post, post *esa.PostResponse) {
 	category := post.Category
 	
-	if self.category != "" {
+	if self.Category != "" {
 		re, _ := regexp.Compile("^/")
-		category = re.ReplaceAllString(self.category, "")
+		category = re.ReplaceAllString(self.Category, "")
 	}
 
 	new_post.Category = category
@@ -138,7 +125,7 @@ func (self *update) setCategory(new_post *esa.Post, post *esa.PostResponse) {
 func (self *update) setName(new_post *esa.Post, post *esa.PostResponse) {
 	post_name := post.Name
 	
-	if self.post_name != "" { post_name = self.post_name }
+	if self.PostName != "" { post_name = self.PostName }
 
 	new_post.Name = post_name
 }
@@ -150,7 +137,7 @@ func (self *update) setBody(new_post *esa.Post, post_number string) error {
 	lock_bytes, err := LoadPostLock(post_number)
 	if err != nil { lock_bytes = body_bytes }
 
-	if self.nobody {
+	if self.WithoutBody {
 		new_post.BodyMd = string(lock_bytes)
 	} else {
 		new_post.BodyMd = string(body_bytes)

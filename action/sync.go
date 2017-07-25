@@ -1,7 +1,6 @@
 package action
 
 import (
-	"flag"
 	"errors"
 	"net/url"
 	"strconv"
@@ -15,30 +14,23 @@ import (
 )
 
 type sync struct {
-	all bool
-	force bool
-	by_number bool
-	quiet bool
+	AllRequired bool `short:"a" long:"all" description:"Exec for all queries."`
+	Force bool `short:"f" long:"force" description:"Exec with ignore last synchronized time."`
+	ByNumber bool `short:"n" long:"number" description:"Exec for only posts of numbers given as arguments."`
+	Quiet bool `short:"q" long:"quiet" description:"Exec quietly."`
 	progress_bars map[string]*pb.ProgressBar
 }
 
 func init() {
-	addProcessor(&sync{}, "sync", "Fetch posts.")
-}
-
-func (self *sync) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.all, "a", false, "Exec for all config.")
-	flagset.BoolVar(&self.force, "f", false, "Exec with ignore last synchronized time.")
-	flagset.BoolVar(&self.quiet, "q", false, "Exec quietly.")
-	flagset.BoolVar(&self.by_number, "number", false, "Exec for only posts of numbers given as arguments.")
+	registProcessor(func() util.Processable { return &sync{} }, "sync", "Fetch posts.", "[OPTIONS] QUERY_OR_POST...")
 }
 
 func (self *sync) Do(args []string) error {
-	if len(args) == 0 && !self.all {
+	if len(args) == 0 && !self.AllRequired {
 		return errors.New("Require query name!")
 	}
 
-	if self.by_number {
+	if self.ByNumber {
 		return self.DoByNumber(args)
 	} else {
 		return self.DoByQuery(args)
@@ -93,7 +85,7 @@ func (self *sync) DoByQuery(args []string) error {
 }
 
 func (self *sync) isTarget(query config.Query, args []string) bool {
-	if self.all { return true }
+	if self.AllRequired { return true }
 	
 	for _, query_name := range args {
 		if query_name == query.Name {
@@ -105,7 +97,7 @@ func (self *sync) isTarget(query config.Query, args []string) bool {
 }
 
 func (self *sync) setupProgressBars(args []string) (*pb.Pool, error) {
-	if self.quiet { return nil, nil }
+	if self.Quiet { return nil, nil }
 	
 	self.progress_bars = make(map[string]*pb.ProgressBar)
 	var bars = []*pb.ProgressBar{}
@@ -152,7 +144,7 @@ func (self *sync) processQuery(query_config config.Query) bool {
 		
 		query.Add("page", strconv.Itoa(page_index))
 		query.Add("per_page", "100")
-		if ! self.force {
+		if ! self.Force {
 			// 当日以降に更新されたものを取得するためには、esaのドキュメントには指定日以降と記述されているが、
 			// 記号が不等号から判断すると、前日を指定しないとダメっぽい。
 			// さらに、実際は前日でもダメで前々日を指定しないといけないが、これはesa APIのバグっぽい。TZが考慮できてないとかなのかな

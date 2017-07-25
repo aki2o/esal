@@ -8,10 +8,11 @@ import (
 	"path/filepath"
 	"syscall"
 	"errors"
-	"flag"
+	"reflect"
 	"golang.org/x/crypto/ssh/terminal"
 	log "github.com/sirupsen/logrus"
 	"github.com/abiosoft/ishell"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/flynn-archive/go-shlex"
 )
 
@@ -87,18 +88,20 @@ func ProcessInteractive(name string, repo *ProcessorRepository) {
 	shell := ishell.New()
 
 	for _, processor_name := range repo.ProcessorNames() {
-		processor	:= repo.GetProcessor(processor_name)
+		processor	:= repo.NewProcessor(processor_name)
+		description := repo.GetDescription(processor_name)
 		usage		:= repo.GetUsage(processor_name)
 
 		adapter := &IshellAdapter{
 			Processor: processor,
 			ProcessorName: processor_name,
+			ProcessorDescription: description,
 			ProcessorUsage: usage,
 		}
-		
+
 		shell.AddCmd(&ishell.Cmd{
 			Name: processor_name,
-			Help: usage,
+			Help: fmt.Sprintf("%s\nUsage:\n  %s %s\n", description, processor_name, usage),
 			Func: adapter.Adapt,
 		})
 	}
@@ -121,26 +124,34 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 
 		if len(args) == 0 { continue }
 		if args[0] == "exit" { break }
-		
-		processor := repo.GetProcessor(args[0])
+
+		processor_name := args[0]
+		processor := repo.NewProcessor(processor_name)
 		if processor == nil {
 			PutError(errors.New("Unknown command!"))
 			continue
 		}
 
-		flagset := flag.NewFlagSet(args[0], flag.PanicOnError)
-		processor.SetOption(flagset)
-
-		err = flagset.Parse(args[1:])
+		parser := flags.NewParser(processor, flags.Default)
+		parser.Name = processor_name
+		parser.Usage = repo.GetUsage(processor_name)
+		
+		args, err = parser.ParseArgs(args)
 		if err != nil {
 			PutError(err)
 			continue
 		}
 
-		err = processor.Do(flagset.Args())
+		err = processor.Do(args)
 		if err != nil {
-			PutError(err)
-			continue
+			err_type := reflect.ValueOf(err)
+			switch fmt.Sprintf("%s", err_type.Type()) {
+			case "util.ProcessorHelpRequired":
+				parser.WriteHelp(os.Stderr)
+			default:
+				PutError(err)
+			}
+			return
 		}
 	}
 }

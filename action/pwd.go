@@ -1,17 +1,14 @@
 package action
 
 import (
-	"flag"
 	"fmt"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type pwd struct {}
 
 func init() {
-	addProcessor(&pwd{}, "pwd", "Print current work category.")
-}
-
-func (self *pwd) SetOption(flagset *flag.FlagSet) {
+	registProcessor(func() util.Processable { return &pwd{} }, "pwd", "Print current work category.", "")
 }
 
 func (self *pwd) Do(args []string) error {

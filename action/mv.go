@@ -1,20 +1,17 @@
 package action
 
 import (
-	"flag"
 	"errors"
 	"os"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type mv struct {}
 
 func init() {
-	addProcessor(&mv{}, "mv", "Move post, category.")
-}
-
-func (self *mv) SetOption(flagset *flag.FlagSet) {
+	registProcessor(func() util.Processable { return &mv{} }, "mv", "Move post, category.", "POST_OR_CATEGORY... CATEGORY")
 }
 
 func (self *mv) Do(args []string) error {
@@ -35,7 +32,7 @@ func (self *mv) Do(args []string) error {
 				fmt.Fprintf(os.Stderr, "Failed to move '%s' to '%s' : %s\n", category, dest_category, err.Error())
 			}
 		} else {
-			update_process := &update{ category: dest_category, nobody: true, lock_keeping: true }
+			update_process := &update{ Category: dest_category, WithoutBody: true, KeepLockRequired: true }
 			err := update_process.Do([]string{ path })
 			if err != nil {
 				log.WithFields(log.Fields{ "from": path, "to": dest_category, "error": err.Error() }).Error("failed to batch move")

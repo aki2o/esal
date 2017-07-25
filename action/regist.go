@@ -1,36 +1,26 @@
 package action
 
 import (
-	"flag"
 	"errors"
 	"io/ioutil"
-	"strings"
 	"regexp"
 	"path/filepath"
 	"fmt"
 	"github.com/aki2o/go-esa/esa"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type regist struct {
-	wip bool
-	ship bool
-	tags string
-	category string
-	post_name string
-	message string
+	Wip bool `short:"w" long:"wip" description:"Update the post as wip."`
+	Shipping bool `short:"s" long:"ship" description:"Ship the post."`
+	Tags []string `short:"t" long:"tag" description:"Tag name labeling tha post."`
+	Category string `short:"c" long:"category" description:"Category of the post."`
+	PostName string `short:"n" long:"name" description:"Name of the post."`
+	Message string `short:"m" long:"message" description:"Commit message."`
 }
 
 func init() {
-	addProcessor(&regist{}, "regist", "Regist a post.")
-}
-
-func (self *regist) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.wip, "wip", false, "Update the post as wip.")
-	flagset.BoolVar(&self.ship, "ship", false, "Ship the post.")
-	flagset.StringVar(&self.tags, "tags", "", "Tag names separated comma.")
-	flagset.StringVar(&self.category, "category", "", "Category.")
-	flagset.StringVar(&self.post_name, "name", "", "Name of the post.")
-	flagset.StringVar(&self.message, "m", "Update post.", "Commit message.")
+	registProcessor(func() util.Processable { return &regist{} }, "regist", "Regist a post.", "[OPTIONS] POST")
 }
 
 func (self *regist) Do(args []string) error {
@@ -45,21 +35,20 @@ func (self *regist) Do(args []string) error {
 	if err != nil { return err }
 
 	wip := true
-	if self.wip { wip = true }
-	if self.ship { wip = false }
+	if self.Wip { wip = true }
+	if self.Shipping { wip = false }
 
-	tags := []string{}
-	if self.tags != "" { tags = strings.Split(self.tags, ",") }
+	tags := self.Tags
 
 	category := Context.Cwd
-	if self.category != "" {
+	if self.Category != "" {
 		re, _ := regexp.Compile("^/")
-		category = re.ReplaceAllString(self.category, "")
+		category = re.ReplaceAllString(self.Category, "")
 	}
 
 	re, _ := regexp.Compile("\\.[^.]+$")
 	post_name := re.ReplaceAllString(filepath.Base(regist_file_path), "")
-	if self.post_name != "" { post_name = self.post_name }
+	if self.PostName != "" { post_name = self.PostName }
 	
 	post := esa.Post{
 		Name: post_name,
@@ -67,7 +56,7 @@ func (self *regist) Do(args []string) error {
 		Tags: tags,
 		Category: category,
 		Wip: wip,
-		Message: self.message,
+		Message: self.Message,
 	}
 
 	fmt.Println("Start upload...")

@@ -91,7 +91,7 @@ func main() {
 				processor_name	:= "sync"
 
 				adapter := &util.IshellAdapter{
-					Processor: repo.GetProcessor(processor_name),
+					Processor: repo.NewProcessor(processor_name),
 					ProcessorName: processor_name,
 					ProcessorUsage: repo.GetUsage(processor_name),
 				}
@@ -123,7 +123,7 @@ func main() {
 				processor_name	:= "members"
 
 				adapter := &util.IshellAdapter{
-					Processor: repo.GetProcessor(processor_name),
+					Processor: repo.NewProcessor(processor_name),
 					ProcessorName: processor_name,
 					ProcessorUsage: repo.GetUsage(processor_name),
 				}

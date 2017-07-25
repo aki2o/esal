@@ -2,7 +2,6 @@ package config
 
 import(
 	"errors"
-	"flag"
 	"encoding/json"
 	"fmt"
 	"bufio"
@@ -10,15 +9,13 @@ import(
 	"strings"
 	"regexp"
 	"strconv"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type query struct {}
 
 func init() {
-	addProcessor(&query{}, "query", "Configure query.")
-}
-
-func (self *query) SetOption(flagset *flag.FlagSet) {
+	registProcessor(func() util.Processable { return &query{} }, "query", "Configure query.", "")
 }
 
 func (self *query) Do(args []string) error {

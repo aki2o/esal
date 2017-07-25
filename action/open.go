@@ -1,7 +1,6 @@
 package action
 
 import (
-	"flag"
 	"errors"
 	"os"
 	"os/exec"
@@ -9,27 +8,23 @@ import (
 	"runtime"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
+	"github.com/aki2o/esa-cui/util"
 )
 
 type open struct {
-	pecolize bool
-	editor string
+	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
+	Editor string `short:"e" long:"editor" description:"Open with Editor."`
 }
 
 func init() {
-	addProcessor(&open{}, "open", "Open a post.")
-}
-
-func (self *open) SetOption(flagset *flag.FlagSet) {
-	flagset.BoolVar(&self.pecolize, "peco", false, "Exec with peco.")
-	flagset.StringVar(&self.editor, "e", "", "Open with editor.")
+	registProcessor(func() util.Processable { return &open{} }, "open", "Open a post.", "[OPTIONS] POST")
 }
 
 func (self *open) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 	
-	if self.pecolize {
+	if self.Pecolize {
 		next_path, err := selectNodeByPeco(path, false)
 		if err != nil { return err }
 
@@ -41,7 +36,7 @@ func (self *open) Do(args []string) error {
 		return errors.New("Require post number!")
 	}
 
-	editor := self.editor
+	editor := self.Editor
 	if editor == "" { editor = os.Getenv("EDITOR") }
 
 	if editor != "" {
