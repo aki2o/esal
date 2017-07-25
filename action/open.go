@@ -13,7 +13,7 @@ import (
 
 type open struct {
 	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
-	Editor string `short:"e" long:"editor" description:"Open with Editor."`
+	Editor string `short:"e" long:"editor" description:"Open with Editor." value-name:"EDITOR"`
 }
 
 func init() {
