@@ -11,7 +11,7 @@ import (
 )
 
 type update struct {
-	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
+	*pecoable
 	Wip bool `short:"w" long:"wip" description:"Update the post as wip."`
 	Shipping bool `short:"s" long:"ship" description:"Ship the post."`
 	Tags []string `short:"t" long:"tag" description:"Tag name labeling tha post."`
@@ -30,7 +30,7 @@ func (self *update) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 
-	if self.Pecolize {
+	if self.PecoRequired() {
 		next_path, err := selectNodeByPeco(path, false)
 		if err != nil { return err }
 

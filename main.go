@@ -33,6 +33,9 @@ func main() {
 				cli.BoolFlag{
 					Name: "non-interactive",
 				},
+				cli.BoolFlag{
+					Name: "use-peco",
+				},
 			},
 			Action: func(ctx *cli.Context) error {
 				team := ctx.Args().First()
@@ -44,8 +47,8 @@ func main() {
 
 				if err := action.SetupContext(team, access_token, true); err != nil { panic(err) }
 
-				action.SetupPeco()
-				
+				action.SetupPeco(ctx.Bool("use-peco"))
+
 				if ctx.Bool("non-interactive") {
 					util.ProcessNonInteractive("action", action.ProcessorRepository())
 				} else {

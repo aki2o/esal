@@ -9,9 +9,9 @@ import (
 )
 
 type cat struct {
+	*pecoable
 	JsonRequired bool `short:"j" long:"json" description:"Show properties as json."`
 	WithoutIndent bool `short:"n" long:"noindent" description:"For json option, show without indent."`
-	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
 }
 
 type postProperty struct {
@@ -59,7 +59,7 @@ func (self *cat) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 
-	if self.Pecolize {
+	if self.PecoRequired() {
 		next_path, err := selectNodeByPeco(path, false)
 		if err != nil { return err }
 

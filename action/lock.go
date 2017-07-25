@@ -6,7 +6,7 @@ import (
 )
 
 type lock struct {
-	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
+	*pecoable
 }
 
 func init() {
@@ -17,7 +17,7 @@ func (self *lock) Do(args []string) error {
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 
-	if self.Pecolize {
+	if self.PecoRequired() {
 		next_path, err := selectNodeByPeco(path, false)
 		if err != nil { return err }
 

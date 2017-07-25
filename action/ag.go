@@ -13,7 +13,7 @@ import (
 )
 
 type ag struct {
-	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
+	*pecoable
 }
 
 func init() {
@@ -30,7 +30,7 @@ func (self *ag) Do(args []string) error {
 	var out []byte
 	var err error
 	
-	if self.Pecolize {
+	if self.PecoRequired() {
 		provider := func(writer *io.PipeWriter) {
 			defer writer.Close()
 
@@ -53,7 +53,7 @@ func (self *ag) Do(args []string) error {
 	
 	if err != nil { return err }
 
-	if self.Pecolize {
+	if self.PecoRequired() {
 		if result == "" { return nil }
 		
 		re, _ := regexp.Compile("^([0-9]+):[0-9]+:")

@@ -12,7 +12,16 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/peco/peco"
 	"github.com/nsf/termbox-go"
+	"github.com/aki2o/esa-cui/config"
 )
+
+type pecoable struct {
+	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
+}
+
+func (self *pecoable) PecoRequired() bool {
+	return self.Pecolize || Context.PecoPreferred
+}
 
 type errBackwardNode struct{}
 
@@ -28,9 +37,13 @@ func (err errForwardNode) Error() string {
 	return "forward"
 }
 
-func SetupPeco() {
+func SetupPeco(peco_preferred bool) {
 	peco.ActionFunc(doBackwardNode).Register("EsaBackwardNode", termbox.KeyCtrlH)
 	peco.ActionFunc(doForwardNode).Register("EsaForwardNode", termbox.KeyCtrlL)
+
+	if config.Global.PecoPreferred || peco_preferred {
+		Context.PecoPreferred = true
+	}
 }
 
 func doBackwardNode(ctx context.Context, state *peco.Peco, e termbox.Event) {

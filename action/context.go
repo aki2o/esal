@@ -17,6 +17,7 @@ type EsaCuiActionContext struct {
 	Team					string
 	Cwd						string
 	Client					*esa.Client
+	PecoPreferred           bool
 }
 
 func (c *EsaCuiActionContext) Root() string {

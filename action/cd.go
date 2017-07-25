@@ -8,7 +8,7 @@ import (
 )
 
 type cd struct {
-	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
+	*pecoable
 }
 
 func init() {
@@ -21,7 +21,7 @@ func (self *cd) Do(args []string) error {
 	if len(args) > 0 { path = args[0] }
 
 	var next_abs_path string = ""
-	if self.Pecolize {
+	if self.PecoRequired() {
 		next_path, err := selectNodeByPeco(path, true)
 		if err != nil { return err }
 
