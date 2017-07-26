@@ -9,8 +9,6 @@ import (
 	"io/ioutil"
 	"net/url"
 	"fmt"
-	"bufio"
-	"strings"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
@@ -90,22 +88,18 @@ func (self *open) openByEditor(path string, dir_path string, post_number string,
 	if after_file_info.ModTime().After(before_file_info.ModTime()) {
 		if self.NewPost {
 			log.WithFields(log.Fields{ "path": path }).Info("Start regist after open.")
-			post_name := self.scanString("Post Name: ")
+			regist_process := &regist{}
+			regist_process.PostName = util.ScanString("Post Name: ")
+			regist_process.TagsByPecoRequired = true
+			regist_process.CategoryByPecoRequired = true
+			regist_process.MessageByScan = true
 			
-			categories, err := selectNodeByPeco("/", true)
-			if err != nil { categories = []string{ CategoryOf(Context.Cwd) } }
-			
-			regist_process := &regist{
-				PostName: post_name,
-				Category: categories[0],
-				Message: self.scanString("Commit Message: "),
-			}
 			if err := regist_process.Do([]string{ real_path }); err != nil { return err }
 		} else {
 			log.WithFields(log.Fields{ "path": path }).Info("Start update after open.")
-			update_process := &update{
-				Message: self.scanString("Commit Message: "),
-			}
+			update_process := &update{}
+			update_process.MessageByScan = true
+			
 			if err := update_process.Do([]string{ path }); err != nil { return err }
 		}
 	}
@@ -167,11 +161,4 @@ func (self *open) getURL(dir_path string, post_number string) (string, error) {
 
 		return post.URL+"/edit", nil
 	}
-}
-
-func (self *open) scanString(prompt string) string {
-	fmt.Print(prompt)
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	return strings.TrimSpace(scanner.Text())
 }

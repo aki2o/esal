@@ -5,21 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"regexp"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
 )
 
 type update struct {
 	*pecoable
-	Wip bool `short:"w" long:"wip" description:"Update the post as wip."`
-	Shipping bool `short:"s" long:"ship" description:"Ship the post."`
-	Tags []string `short:"t" long:"tag" description:"Tag name labeling tha post."`
-	Category string `short:"c" long:"category" description:"Category of the post."`
-	PostName string `short:"n" long:"name" description:"Name of the post."`
-	Message string `short:"m" long:"message" description:"Commit message."`
-	WithoutBody bool `short:"n" long:"nobody" description:"Exec without body."`
-	KeepLockRequired bool `short:"k" long:"keeplock" description:"Exec without unlock."`
+	*uploadable
+	WithoutBody bool `short:"B" long:"nobody" description:"Exec without body."`
+	KeepLockRequired bool `short:"L" long:"keeplock" description:"Exec without unlock."`
 }
 
 func init() {
@@ -53,17 +47,17 @@ func (self *update) process(path string) error {
 	if err != nil { return err }
 	
 	new_post := esa.Post{
-		Message: self.Message,
 		OriginalRevision: esa.PostOriginalRevision {
 			Number: post.RevisionNumber,
 			User: post.UpdatedBy.ScreenName,
 		},
 	}
 
-	self.setWip(&new_post, post)
-	self.setTags(&new_post, post)
-	self.setCategory(&new_post, post)
-	self.setName(&new_post, post)
+	self.setWip(&new_post, post.Wip)
+	self.setTags(&new_post, post.Tags)
+	self.setCategory(&new_post, post.Category)
+	self.setName(&new_post, post.Name)
+	self.setMessage(&new_post)
 	if err := self.setBody(&new_post, post_number); err != nil { return err }
 	
 	fmt.Println("Start upload...")
@@ -99,42 +93,6 @@ func (self *update) loadPostDataWithVerify(post_number string) (*esa.PostRespons
 	}
 
 	return &post, nil
-}
-
-func (self *update) setWip(new_post *esa.Post, post *esa.PostResponse) {
-	wip := post.Wip
-	
-	if self.Wip { wip = true }
-	if self.Shipping { wip = false }
-
-	new_post.Wip = wip
-}
-
-func (self *update) setTags(new_post *esa.Post, post *esa.PostResponse) {
-	tags := post.Tags
-	
-	if len(self.Tags) > 0 { tags = self.Tags }
-
-	new_post.Tags = tags
-}
-
-func (self *update) setCategory(new_post *esa.Post, post *esa.PostResponse) {
-	category := post.Category
-	
-	if self.Category != "" {
-		re, _ := regexp.Compile("^/")
-		category = re.ReplaceAllString(self.Category, "")
-	}
-
-	new_post.Category = category
-}
-
-func (self *update) setName(new_post *esa.Post, post *esa.PostResponse) {
-	post_name := post.Name
-	
-	if self.PostName != "" { post_name = self.PostName }
-
-	new_post.Name = post_name
 }
 
 func (self *update) setBody(new_post *esa.Post, post_number string) error {

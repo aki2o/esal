@@ -32,7 +32,8 @@ func (self *mv) Do(args []string) error {
 				fmt.Fprintf(os.Stderr, "Failed to move '%s' to '%s' : %s\n", category, dest_category, err.Error())
 			}
 		} else {
-			update_process := &update{ Category: dest_category, WithoutBody: true, KeepLockRequired: true }
+			update_process := &update{ WithoutBody: true, KeepLockRequired: true }
+			update_process.Category = dest_category
 			err := update_process.Do([]string{ path })
 			if err != nil {
 				log.WithFields(log.Fields{ "from": path, "to": dest_category, "error": err.Error() }).Error("failed to batch move")

@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"errors"
 	"reflect"
@@ -58,6 +59,13 @@ func Exists(filename string) bool {
     _, err := os.Stat(filename)
 	
     return err == nil
+}
+
+func ScanString(prompt string) string {
+	fmt.Print(prompt)
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	return strings.TrimSpace(scanner.Text())
 }
 
 func Readln(r *bufio.Reader) (string, error) {
