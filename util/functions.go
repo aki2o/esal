@@ -63,8 +63,13 @@ func EncodePath(path string) string {
 	
 	nodes := []string{}
 	for _, node := range strings.Split(path, separator) {
-		enc_node := base64.StdEncoding.EncodeToString([]byte(node))
-		nodes = append(nodes, r.Replace(enc_node))
+		switch node {
+		case ".", "..":
+			nodes = append(nodes, node)
+		default:
+			enc_node := base64.StdEncoding.EncodeToString([]byte(node))
+			nodes = append(nodes, r.Replace(enc_node))
+		}
 	}
 
 	return strings.Join(nodes, separator)
@@ -76,11 +81,16 @@ func DecodePath(path string) string {
 	
 	nodes := []string{}
 	for _, node := range strings.Split(path, separator) {
-		bytes, err := base64.StdEncoding.DecodeString(r.Replace(node))
-		if err != nil {
+		switch node {
+		case ".", "..":
 			nodes = append(nodes, node)
-		} else {
-			nodes = append(nodes, string(bytes))
+		default:
+			bytes, err := base64.StdEncoding.DecodeString(r.Replace(node))
+			if err != nil {
+				nodes = append(nodes, node)
+			} else {
+				nodes = append(nodes, string(bytes))
+			}
 		}
 	}
 
