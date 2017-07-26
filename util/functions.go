@@ -17,7 +17,7 @@ import (
 )
 
 func LocalRootPath() string {
-	return filepath.Join(os.Getenv("HOME"), ".esa")
+	return filepath.Join(os.Getenv("HOME"), ".esal")
 }
 
 func PutError(err error) {
