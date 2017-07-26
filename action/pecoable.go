@@ -60,7 +60,7 @@ func doForwardNode(ctx context.Context, state *peco.Peco, e termbox.Event) {
 	state.Exit(errForwardNode{ node_path: node_path})
 }
 
-func pipePeco(provider func(*io.PipeWriter)) (string, string, error) {
+func pipePeco(provider func(*io.PipeWriter), prompt string) (string, string, error) {
 	from_provider_reader, to_peco_writer := io.Pipe()
 	
 	go provider(to_peco_writer)
@@ -73,7 +73,7 @@ func pipePeco(provider func(*io.PipeWriter)) (string, string, error) {
 		defer to_self_writer.Close()
 		
 		peco := peco.New()
-		peco.Argv	= []string{"--on-cancel", "error"}
+		peco.Argv	= []string{"--on-cancel", "error", "--prompt", prompt}
 		peco.Stdin	= from_provider_reader
 		peco.Stdout = to_self_writer
 		
@@ -109,18 +109,25 @@ func pipePeco(provider func(*io.PipeWriter)) (string, string, error) {
 	return strings.TrimRight(string(bytes), "\n"), status.String(), nil
 }
 
-func selectNodeByPeco(path string, directory_only bool) (string, error) {
+func selectNodeByPeco(path string, directory bool) (string, error) {
 	path = "/"+CategoryOf(PhysicalPathOf(path))
 	
 	for {
 		provider := func(writer *io.PipeWriter) {
 			defer writer.Close()
 			
-			ls := &ls{ writer: writer, DirectoryOnly: directory_only }
+			ls := &ls{ writer: writer, DirectoryOnly: directory }
 			ls.printNodesIn(path, PhysicalPathOf(path))
 		}
 
-		selected, status, err := pipePeco(provider)
+		var prompt string
+		if directory {
+			prompt = "Select category"
+		} else {
+			prompt = "Select post"
+		}
+		
+		selected, status, err := pipePeco(provider, prompt)
 		if err != nil { return "", err }
 		log.WithFields(log.Fields{ "selected": selected, "status": status }).Debug("return peco")
 		

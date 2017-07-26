@@ -43,7 +43,7 @@ func (self *ag) Do(args []string) error {
 			rich_writer.Flush()
 		}
 
-		result, _, err = pipePeco(provider)
+		result, _, err = pipePeco(provider, "Query")
 	} else {
 		out, err = exec.Command("ag", cmd_args...).Output()
 		if err != nil { return err }
