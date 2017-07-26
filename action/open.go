@@ -14,7 +14,7 @@ import (
 )
 
 type open struct {
-	*pecoable
+	pecoable
 	Editor string `short:"e" long:"editor" description:"Open by editor." value-name:"EDITOR"`
 	ByBrowser bool `short:"b" long:"browser" description:"Open by browser."`
 	NewPost bool `short:"n" long:"new" description:"Open new post."`

@@ -6,7 +6,7 @@ import (
 )
 
 type lock struct {
-	*pecoable
+	pecoable
 }
 
 func init() {

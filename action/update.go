@@ -10,8 +10,8 @@ import (
 )
 
 type update struct {
-	*pecoable
-	*uploadable
+	pecoable
+	uploadable
 	WithoutBody bool `short:"B" long:"nobody" description:"Exec without body."`
 	KeepLockRequired bool `short:"L" long:"keeplock" description:"Exec without unlock."`
 }

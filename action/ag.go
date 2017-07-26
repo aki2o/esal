@@ -13,7 +13,7 @@ import (
 )
 
 type ag struct {
-	*pecoable
+	pecoable
 }
 
 func init() {

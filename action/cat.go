@@ -10,7 +10,7 @@ import (
 )
 
 type cat struct {
-	*pecoable
+	pecoable
 	ByBrowser bool `short:"b" long:"browser" description:"Open by browser."`
 	JsonRequired bool `short:"j" long:"json" description:"Show properties as json."`
 	WithoutIndent bool `short:"n" long:"noindent" description:"For json option, show without indent."`

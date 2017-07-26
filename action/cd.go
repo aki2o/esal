@@ -8,7 +8,7 @@ import (
 )
 
 type cd struct {
-	*pecoable
+	pecoable
 }
 
 func init() {

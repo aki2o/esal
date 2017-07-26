@@ -11,7 +11,7 @@ import (
 )
 
 type regist struct {
-	*uploadable
+	uploadable
 }
 
 func init() {
