@@ -17,9 +17,12 @@ import (
 
 type pecoable struct {
 	Pecolize bool `short:"p" long:"peco" description:"Exec with peco."`
+	NoPecolize bool `short:"P" long:"nopeco" description:"Exec without peco."`
 }
 
 func (self *pecoable) PecoRequired() bool {
+	if self.NoPecolize { return false }
+	
 	return self.Pecolize || Context.PecoPreferred
 }
 
@@ -73,7 +76,7 @@ func pipePeco(provider func(*io.PipeWriter), prompt string) (string, string, err
 		defer to_self_writer.Close()
 		
 		peco := peco.New()
-		peco.Argv	= []string{"--on-cancel", "error", "--prompt", prompt}
+		peco.Argv	= []string{"--on-cancel", "error", "--prompt", prompt+": "}
 		peco.Stdin	= from_provider_reader
 		peco.Stdout = to_self_writer
 		
