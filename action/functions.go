@@ -87,7 +87,7 @@ func ExcludePostName(path string) string {
 func CategoryOf(physical_path string) string {
 	separator := string(os.PathSeparator)
 	root_dirs := strings.Split(Context.Root(), separator)
-	curr_dirs := strings.Split(physical_path, separator)[len(root_dirs):]
+	curr_dirs := strings.Split(util.DecodePath(physical_path), separator)[len(root_dirs):]
 
 	return strings.Join(curr_dirs, "/")
 }
@@ -96,12 +96,13 @@ func PhysicalPathOf(path string) string {
 	path = ExcludePostName(path)
 	if path == "" {	return Context.Cwd }
 	
-	dir_names := strings.Split(path, "/")
+	categories_or_number := strings.Split(path, "/")
+	physical_path := util.EncodePath(filepath.Join(categories_or_number...))
 	
-	if dir_names[0] == "" {
-		return filepath.Join(Context.Root(), filepath.Join(dir_names...))
+	if categories_or_number[0] == "" {
+		return filepath.Join(Context.Root(), physical_path)
 	} else {
-		return filepath.Join(Context.Cwd, filepath.Join(dir_names...))
+		return filepath.Join(Context.Cwd, physical_path)
 	}
 }
 
@@ -117,14 +118,14 @@ func DirectoryPathAndPostNumberOf(path string) (string, string) {
 	return re.ReplaceAllString(path, ""), post_number
 }
 
-func FindPostDataPath(abs_path string, number_as_string string) []string {
+func FindPostDataPath(physical_path string, number_as_string string) []string {
 	ret := []string{}
 	
-	for _, node := range util.GetNodes(abs_path) {
+	for _, node := range util.GetNodes(physical_path) {
 		if node.IsDir() {
-			ret = append(ret, FindPostDataPath(filepath.Join(abs_path, node.Name()), number_as_string)...)
+			ret = append(ret, FindPostDataPath(filepath.Join(physical_path, node.Name()), number_as_string)...)
 		} else if node.Name() == number_as_string {
-			ret = append(ret, filepath.Join(abs_path, number_as_string))
+			ret = append(ret, filepath.Join(physical_path, number_as_string))
 		}
 	}
 

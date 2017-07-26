@@ -20,21 +20,21 @@ func (self *cd) Do(args []string) error {
 	var err error
 	if len(args) > 0 { path = args[0] }
 
-	var next_abs_path string = ""
+	var next_physical_path string = ""
 	if self.PecoRequired() {
 		next_path, err := selectNodeByPeco(path, true)
 		if err != nil { return err }
 
-		next_abs_path = PhysicalPathOf(next_path[0])
+		next_physical_path = PhysicalPathOf(next_path[0])
 	} else {
-		next_abs_path = PhysicalPathOf(path)
+		next_physical_path = PhysicalPathOf(path)
 	}
 	
-	info, err := os.Stat(next_abs_path)
-	if err != nil { return fmt.Errorf("Failed to get stat of '%s' : %s", next_abs_path, err.Error()) }
-	if ! info.IsDir() { return fmt.Errorf("Not directory : %s", next_abs_path) }
+	info, err := os.Stat(next_physical_path)
+	if err != nil { return fmt.Errorf("Failed to get stat of '%s' : %s", next_physical_path, err.Error()) }
+	if ! info.IsDir() { return fmt.Errorf("Not directory : %s", next_physical_path) }
 
-	Context.Cwd = next_abs_path
+	Context.Cwd = next_physical_path
 	log.WithFields(log.Fields{ "cwd": Context.Cwd }).Info("update cwd")
 
 	return nil

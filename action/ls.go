@@ -11,6 +11,7 @@ import (
 	"time"
 	"strconv"
 	"errors"
+	"regexp"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
@@ -36,20 +37,27 @@ func (self *ls) Do(args []string) error {
 	return nil
 }
 
-func (self *ls) printNodesIn(path string, abs_path string) {
+func (self *ls) printNodesIn(path string, physical_path string) {
 	writer := bufio.NewWriter(self.writer)
+
+	if len(path) > 1 {
+		re, _ := regexp.Compile("/$")
+		path = re.ReplaceAllString(path, "")
+	}
 	
-	for _, node := range util.GetNodes(abs_path) {
-		node_path		:= filepath.Join(path, node.Name())
-		node_abs_path	:= filepath.Join(abs_path, node.Name())
+	for _, node := range util.GetNodes(physical_path) {
+		node_physical_path := filepath.Join(physical_path, node.Name())
 		
 		if node.IsDir() {
+			node_path := util.DecodePath(node.Name())
+			if path != "" && path != "/" { node_path = path+"/"+node_path }
+			
 			if ! self.FileOnly {
 				fmt.Fprintln(writer, self.makeDirLine(node_path))
 				writer.Flush()
 			}
 
-			if self.Recursive { self.printNodesIn(node_path, node_abs_path) }
+			if self.Recursive { self.printNodesIn(node_path, node_physical_path) }
 		} else if ! self.DirectoryOnly {
 			var post esa.PostResponse
 			
@@ -59,7 +67,7 @@ func (self *ls) printNodesIn(path string, abs_path string) {
 			if err == nil { err = json.Unmarshal(bytes, &post) }
 
 			if err != nil {
-				log.WithFields(log.Fields{ "name": node.Name(), "path": node_abs_path }).Error("Failed to load post")
+				log.WithFields(log.Fields{ "name": node.Name(), "path": node_physical_path }).Error("Failed to load post")
 				util.PutError(errors.New("Failed to load post data of "+post_number+"!"))
 			} else {
 				fmt.Fprintln(writer, self.makeFileLine(path, &post))

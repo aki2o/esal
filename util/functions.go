@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"errors"
 	"reflect"
+	"encoding/base64"
 	"golang.org/x/crypto/ssh/terminal"
 	log "github.com/sirupsen/logrus"
 	"github.com/abiosoft/ishell"
@@ -36,6 +37,54 @@ func RemoveDup(args []string) []string {
         }
     }
     return results
+}
+
+func SplitByDoubleHyphen(args []string) ([]string, []string) {
+	ret1 := []string{}
+	ret2 := []string{}
+	
+	not_yet := true
+	for _, e := range args {
+		if e == "--" {
+			not_yet = false
+		} else if not_yet {
+			ret1 = append(ret1, e)
+		} else {
+			ret2 = append(ret2, e)
+		}
+	}
+
+	return ret1, ret2
+}
+
+func EncodePath(path string) string {
+	separator := string(os.PathSeparator)
+	r := strings.NewReplacer("=", "-", "/", "_", "+", ".")
+	
+	nodes := []string{}
+	for _, node := range strings.Split(path, separator) {
+		enc_node := base64.StdEncoding.EncodeToString([]byte(node))
+		nodes = append(nodes, r.Replace(enc_node))
+	}
+
+	return strings.Join(nodes, separator)
+}
+
+func DecodePath(path string) string {
+	separator := string(os.PathSeparator)
+	r := strings.NewReplacer("-", "=",  "_", "/",".","+")
+	
+	nodes := []string{}
+	for _, node := range strings.Split(path, separator) {
+		bytes, err := base64.StdEncoding.DecodeString(r.Replace(node))
+		if err != nil {
+			nodes = append(nodes, node)
+		} else {
+			nodes = append(nodes, string(bytes))
+		}
+	}
+
+	return strings.Join(nodes, separator)
 }
 
 func GetNodes(path string) []os.FileInfo {
