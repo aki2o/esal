@@ -13,20 +13,27 @@ type diff struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &diff{} }, "diff", "Diff a post between upstream and local.", "[OPTIONS] POST")
+	registProcessor(func() util.Processable { return &diff{} }, "diff", "Diff a post between upstream and local.", "[OPTIONS] POST...")
 }
 
 func (self *diff) Do(args []string) error {
-	var path string = ""
-	if len(args) > 0 { path = args[0] }
-
 	if self.PecoRequired() {
-		next_path, err := selectNodeByPeco(path, false)
-		if err != nil { return err }
+		var path string = ""
+		var err error
+	
+		if len(args) > 0 { path = args[0] }
 
-		path = next_path
+		args, err = selectNodeByPeco(path, false)
+		if err != nil { return err }
 	}
 
+	for _, path := range args {
+		if err := self.process(path); err != nil { return err }
+	}
+	return nil
+}
+
+func (self *diff) process(path string) error {
 	_, post_number := DirectoryPathAndPostNumberOf(path)
 	if post_number == "" {
 		return errors.New("Require post number!")

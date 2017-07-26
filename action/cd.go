@@ -25,7 +25,7 @@ func (self *cd) Do(args []string) error {
 		next_path, err := selectNodeByPeco(path, true)
 		if err != nil { return err }
 
-		next_abs_path = PhysicalPathOf(next_path)
+		next_abs_path = PhysicalPathOf(next_path[0])
 	} else {
 		next_abs_path = PhysicalPathOf(path)
 	}

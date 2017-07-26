@@ -109,7 +109,7 @@ func pipePeco(provider func(*io.PipeWriter), prompt string) (string, string, err
 	return strings.TrimRight(string(bytes), "\n"), status.String(), nil
 }
 
-func selectNodeByPeco(path string, directory bool) (string, error) {
+func selectNodeByPeco(path string, directory bool) ([]string, error) {
 	path = "/"+CategoryOf(PhysicalPathOf(path))
 	
 	for {
@@ -128,7 +128,7 @@ func selectNodeByPeco(path string, directory bool) (string, error) {
 		}
 		
 		selected, status, err := pipePeco(provider, prompt)
-		if err != nil { return "", err }
+		if err != nil { return []string{}, err }
 		log.WithFields(log.Fields{ "selected": selected, "status": status }).Debug("return peco")
 		
 		switch status {
@@ -144,7 +144,7 @@ func selectNodeByPeco(path string, directory bool) (string, error) {
 				if path == "" { path = "/" }
 			}
 		default:
-			return selected, nil
+			return strings.Split(selected, "\n"), nil
 		}
 	}
 }
