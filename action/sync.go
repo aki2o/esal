@@ -19,6 +19,7 @@ type sync struct {
 	ByNumber bool `short:"n" long:"number" description:"Exec for only posts of numbers given as arguments."`
 	Quiet bool `short:"q" long:"quiet" description:"Exec quietly."`
 	progress_bars map[string]*pb.ProgressBar
+	found_tags []string
 }
 
 func init() {
@@ -30,11 +31,18 @@ func (self *sync) Do(args []string) error {
 		return errors.New("Require query name!")
 	}
 
+	self.found_tags = []string{}
+
+	var err error
 	if self.ByNumber {
-		return self.DoByNumber(args)
+		err = self.DoByNumber(args)
 	} else {
-		return self.DoByQuery(args)
+		err = self.DoByQuery(args)
 	}
+
+	self.saveTags()
+	
+	return err
 }
 
 func (self *sync) DoByNumber(args []string) error {
@@ -58,6 +66,8 @@ func (self *sync) DoByNumber(args []string) error {
 			fmt.Fprintf(os.Stderr, "Failed to save post '%d: %s' : %s\n", post.Number, post.FullName, err.Error())
 			continue
 		}
+
+		self.found_tags = append(self.found_tags, post.Tags...)
 	}
 	return nil
 }
@@ -191,6 +201,8 @@ func (self *sync) processQuery(query_config config.Query) bool {
 				success = false
 			}
 			
+			self.found_tags = append(self.found_tags, post.Tags...)
+			
 			if progress_bar != nil { progress_bar.Increment() }
 		}
 
@@ -199,4 +211,12 @@ func (self *sync) processQuery(query_config config.Query) bool {
 
 	log.Info("finished to fetch post "+Context.Team+":"+query_config.Name)
 	return success
+}
+
+func (self *sync) saveTags() {
+	tag_process := &tag{}
+	err := tag_process.AddTags(self.found_tags)
+	if err != nil {
+		log.WithFields(log.Fields{ "tags": self.found_tags, "error": err.Error() }).Error("failed to save tags")
+	}
 }

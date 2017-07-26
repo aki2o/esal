@@ -25,6 +25,18 @@ func PutError(err error) {
 	os.Stderr.Write([]byte(err.Error()+"\n"))
 }
 
+func RemoveDup(args []string) []string {
+    results := make([]string, 0, len(args))
+    encountered := map[string]bool{}
+    for i := 0; i < len(args); i++ {
+        if !encountered[args[i]] {
+            encountered[args[i]] = true
+            results = append(results, args[i])
+        }
+    }
+    return results
+}
+
 func GetNodes(path string) []os.FileInfo {
 	nodes, err := ioutil.ReadDir(path)
 	
