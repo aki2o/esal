@@ -9,6 +9,7 @@ import (
 	"strings"
 	"strconv"
 	"regexp"
+	"runtime"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
@@ -128,4 +129,14 @@ func FindPostDataPath(abs_path string, number_as_string string) []string {
 	}
 
 	return ret
+}
+
+func BrowserCommand() string {
+	if runtime.GOOS == "windows" {
+		return "start"
+	} else if runtime.GOOS == "darwin" {
+		return "open"
+	} else {
+		return "xdg-open"
+	}
 }

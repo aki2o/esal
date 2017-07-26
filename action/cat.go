@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"encoding/json"
 	"strconv"
+	"os/exec"
 	"github.com/aki2o/esal/util"
 )
 
 type cat struct {
 	*pecoable
+	ByBrowser bool `short:"b" long:"browser" description:"Open by browser."`
 	JsonRequired bool `short:"j" long:"json" description:"Show properties as json."`
 	WithoutIndent bool `short:"n" long:"noindent" description:"For json option, show without indent."`
 }
@@ -78,7 +80,15 @@ func (self *cat) process(path string) error {
 		return errors.New("Require post number!")
 	}
 
-	if self.JsonRequired {
+	if self.ByBrowser {
+		bytes, err := LoadPostData(post_number)
+		if err != nil { return err }
+
+		var post postProperty
+		if err := json.Unmarshal(bytes, &post); err != nil { return err }
+
+		if err := exec.Command(BrowserCommand(), post.URL).Run(); err != nil { return err }
+	} else if self.JsonRequired {
 		bytes, err := LoadPostData(post_number)
 		if err != nil { return err }
 

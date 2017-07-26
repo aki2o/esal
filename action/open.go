@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"encoding/json"
-	"runtime"
 	"io/ioutil"
 	"net/url"
 	"fmt"
@@ -17,7 +16,7 @@ import (
 type open struct {
 	*pecoable
 	Editor string `short:"e" long:"editor" description:"Open by editor." value-name:"EDITOR"`
-	Browser bool `short:"b" long:"browser" description:"Open by browser."`
+	ByBrowser bool `short:"b" long:"browser" description:"Open by browser."`
 	NewPost bool `short:"n" long:"new" description:"Open new post."`
 }
 
@@ -54,7 +53,7 @@ func (self *open) process(path string) error {
 	editor := self.Editor
 	if editor == "" { editor = os.Getenv("EDITOR") }
 
-	if self.Browser {
+	if self.ByBrowser {
 		return self.openByBrowser(dir_path, post_number)
 	} else if editor != "" {
 		return self.openByEditor(path, dir_path, post_number, editor)
@@ -116,17 +115,7 @@ func (self *open) openByBrowser(dir_path string, post_number string) error {
 	url, err := self.getURL(dir_path, post_number)
 	if err != nil { return err }
 	
-	cmd := ""
-	if runtime.GOOS == "windows" {
-		cmd = "start"
-	} else if runtime.GOOS == "darwin" {
-		cmd = "open"
-	} else {
-		cmd = "xdg-open"
-	}
-
-	if err := exec.Command(cmd, url).Run(); err != nil { return err }
-
+	if err := exec.Command(BrowserCommand(), url).Run(); err != nil { return err }
 	return nil
 }
 
