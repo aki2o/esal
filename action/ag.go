@@ -9,6 +9,7 @@ import (
 	"strings"
 	"errors"
 	"encoding/json"
+	"os"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
 )
@@ -17,16 +18,27 @@ type ag struct {
 	pecoable
 	ByBrowser bool `short:"b" long:"browser" description:"Open peco results by browser."`
 	EditRequired bool `short:"e" long:"edit" description:"Open peco results for edit."`
+	category string
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &ag{} }, "ag", "Execute ag command.", "[OPTIONS] PATTERN")
+	registProcessor(func() util.Processable { return &ag{} }, "ag", "Execute ag command.", "[OPTIONS] PATTERN [CATEGORY]")
 }
 
 func (self *ag) Do(args []string) error {
-	cmd_args := append([]string{"-G", ".md$"}, args...)
+	args, cmd_args := util.SplitByDoubleHyphen(args)
+
+	if len(args) == 0 { return errors.New("Require pattern!") }
+	
+	cmd_args = append([]string{"-G", ".md$", args[0]}, cmd_args...)
 	cmd_args = append(cmd_args, Context.BodyRoot())
 
+	path := ""
+	if len(args) > 1 {
+		path, _ = DirectoryPathAndPostNumberOf(args[1])
+	}
+	self.category = CategoryOf(PhysicalPathOf(path))
+	
 	if self.PecoRequired() {
 		return self.processByPeco(cmd_args)
 	} else {
@@ -37,9 +49,8 @@ func (self *ag) Do(args []string) error {
 func (self *ag) process(cmd_args []string) error {
 	out, err := exec.Command("ag", cmd_args...).Output()
 	if err != nil { return err }
-	
-	fmt.Print(self.pathRegexp().ReplaceAllStringFunc(string(out), self.appendPostName))
-	return nil
+
+	return self.printResult(os.Stdout, string(out))
 }
 
 func (self *ag) processByPeco(cmd_args []string) error {
@@ -49,10 +60,7 @@ func (self *ag) processByPeco(cmd_args []string) error {
 		out, err := exec.Command("ag", cmd_args...).Output()
 		if err != nil { return }
 
-		rich_writer := bufio.NewWriter(writer)
-
-		fmt.Fprintf(rich_writer, self.pathRegexp().ReplaceAllStringFunc(string(out), self.appendPostName))
-		rich_writer.Flush()
+		self.printResult(writer, string(out))
 	}
 
 	selected, _, err := pipePeco(provider, "Query")
@@ -83,21 +91,27 @@ func (self *ag) processByPeco(cmd_args []string) error {
 	return nil
 }
 
-func (self *ag) pathRegexp() *regexp.Regexp {
-	re, _ := regexp.Compile("(?m)^"+Context.BodyRoot()+"/[0-9]+\\.md:[0-9]+:")
-	return re
-}
+func (self *ag) printResult(writer io.Writer, ret string) error {
+	rich_writer := bufio.NewWriter(writer)
+	re, _ := regexp.Compile(fmt.Sprintf("^%s/([0-9]+)\\.md:([0-9]+):", Context.BodyRoot()))
+	
+	for _, line := range strings.Split(ret, "\n") {
+		matches := re.FindStringSubmatch(line)
+		if len(matches) <= 2 { continue }
 
-func (self *ag) appendPostName(path string) string {
-	re, _ := regexp.Compile("([0-9]+)\\.md:([0-9]+):$")
-	matches := re.FindStringSubmatch(path)
-	if len(matches) <= 2 { return path }
+		bytes, err := LoadPostData(matches[1])
+		if err != nil { return err }
 
-	bytes, err := LoadPostData(matches[1])
-	if err != nil { return path }
+		var post esa.PostResponse
+		if err := json.Unmarshal(bytes, &post); err != nil { return err }
 
-	var post esa.PostResponse
-	if err := json.Unmarshal(bytes, &post); err != nil { return path }
-
-	return fmt.Sprintf("%s:%s:%s: ", matches[1], matches[2], post.FullName)
+		if self.category == "" && post.Category != "" { continue }
+		if len(post.Category) < len(self.category) { continue }
+		if strings.HasPrefix(post.Category, self.category) { continue }
+		
+		fmt.Fprintf(rich_writer, re.ReplaceAllString(line+"\n", fmt.Sprintf("%s:%s:%s: ", matches[1], matches[2], post.FullName)))
+	}
+	
+	rich_writer.Flush()
+	return nil
 }
