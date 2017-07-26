@@ -9,8 +9,8 @@ import (
 	"os"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/cheggaaa/pb.v1"
-	"github.com/aki2o/esa-cui/util"
-	"github.com/aki2o/esa-cui/config"
+	"github.com/aki2o/esal/util"
+	"github.com/aki2o/esal/config"
 )
 
 type sync struct {

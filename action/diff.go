@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"fmt"
 	"github.com/sergi/go-diff/diffmatchpatch"
-	"github.com/aki2o/esa-cui/util"
+	"github.com/aki2o/esal/util"
 )
 
 type diff struct {

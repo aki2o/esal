@@ -13,7 +13,7 @@ import (
 	"errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
-	"github.com/aki2o/esa-cui/util"
+	"github.com/aki2o/esal/util"
 )
 
 type ls struct {

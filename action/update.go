@@ -7,7 +7,7 @@ import (
 	"os"
 	"regexp"
 	"github.com/aki2o/go-esa/esa"
-	"github.com/aki2o/esa-cui/util"
+	"github.com/aki2o/esal/util"
 )
 
 type update struct {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"strconv"
-	"github.com/aki2o/esa-cui/util"
+	"github.com/aki2o/esal/util"
 )
 
 type cat struct {

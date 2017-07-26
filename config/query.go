@@ -9,7 +9,7 @@ import(
 	"strings"
 	"regexp"
 	"strconv"
-	"github.com/aki2o/esa-cui/util"
+	"github.com/aki2o/esal/util"
 )
 
 type query struct {}

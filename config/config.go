@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"encoding/json"
 	"time"
-	"github.com/aki2o/esa-cui/util"
+	"github.com/aki2o/esal/util"
 )
 
 type QueryEntry struct {

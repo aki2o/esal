@@ -2,7 +2,7 @@ package action
 
 import (
 	"fmt"
-	"github.com/aki2o/esa-cui/util"
+	"github.com/aki2o/esal/util"
 )
 
 type pwd struct {}

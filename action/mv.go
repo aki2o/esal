@@ -5,7 +5,7 @@ import (
 	"os"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"github.com/aki2o/esa-cui/util"
+	"github.com/aki2o/esal/util"
 )
 
 type mv struct {}

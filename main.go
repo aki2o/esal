@@ -4,9 +4,9 @@ import (
 	"os"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
-	"github.com/aki2o/esa-cui/util"
-	"github.com/aki2o/esa-cui/action"
-	"github.com/aki2o/esa-cui/config"
+	"github.com/aki2o/esal/util"
+	"github.com/aki2o/esal/action"
+	"github.com/aki2o/esal/config"
 )
 
 func init() {

@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/peco/peco"
 	"github.com/nsf/termbox-go"
-	"github.com/aki2o/esa-cui/config"
+	"github.com/aki2o/esal/config"
 )
 
 type pecoable struct {
