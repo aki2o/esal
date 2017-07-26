@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"github.com/aki2o/esal/util"
@@ -42,10 +43,7 @@ func main() {
 				
 				config.Load(team)
 				
-				access_token := ctx.String("access-token")
-				if access_token == "" { access_token = util.ReadAccessToken() }
-
-				if err := action.SetupContext(team, access_token, true); err != nil { panic(err) }
+				if err := action.SetupContext(team, detectAccessToken(ctx, team), true); err != nil { panic(err) }
 
 				action.SetupPeco(ctx.Bool("use-peco"))
 
@@ -85,10 +83,7 @@ func main() {
 				
 				config.Load(team)
 				
-				access_token := ctx.String("access_token")
-				if access_token == "" { access_token = util.ReadAccessToken() }
-
-				if err := action.SetupContext(team, access_token, false); err != nil { panic(err) }
+				if err := action.SetupContext(team, detectAccessToken(ctx, team), false); err != nil { panic(err) }
 
 				repo			:= action.ProcessorRepository()
 				processor_name	:= "sync"
@@ -117,10 +112,7 @@ func main() {
 				
 				config.Load(team)
 				
-				access_token := ctx.String("access_token")
-				if access_token == "" { access_token = util.ReadAccessToken() }
-
-				if err := action.SetupContext(team, access_token, false); err != nil { panic(err) }
+				if err := action.SetupContext(team, detectAccessToken(ctx, team), false); err != nil { panic(err) }
 
 				repo			:= action.ProcessorRepository()
 				processor_name	:= "members"
@@ -138,4 +130,12 @@ func main() {
 	}
 	
 	app.Run(os.Args)
+}
+
+func detectAccessToken(ctx *cli.Context, team string) string {
+	access_token := ctx.String("access-token")
+	if access_token == "" { access_token = os.Getenv("ESAL_ACCESS_TOKEN_"+strings.ToUpper(team)) }
+	if access_token == "" { access_token = util.ReadAccessToken() }
+
+	return access_token
 }
