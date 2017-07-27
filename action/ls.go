@@ -19,8 +19,8 @@ import (
 type ls struct {
 	LongFormatRequired bool `short:"l" long:"long" description:"Print long format."`
 	Recursive bool `short:"r" long:"recursive" description:"Exec recursively."`
-	DirectoryOnly bool `short:"d" long:"directory" description:"Print only directory."`
-	FileOnly bool `short:"f" long:"file" description:"Print only file."`
+	CategoryOnly bool `short:"c" long:"category" description:"Print only category."`
+	PostOnly bool `short:"p" long:"post" description:"Print only post."`
 	writer io.Writer
 }
 
@@ -46,13 +46,13 @@ func (self *ls) printNodesIn(path string, physical_path string) {
 		if node.IsDir() {
 			node_path := path+util.DecodePath(node.Name())
 			
-			if ! self.FileOnly {
+			if ! self.PostOnly {
 				fmt.Fprintln(writer, self.makeDirLine(node_path))
 				writer.Flush()
 			}
 
 			if self.Recursive { self.printNodesIn(node_path, node_physical_path) }
-		} else if ! self.DirectoryOnly {
+		} else if ! self.CategoryOnly {
 			var post esa.PostResponse
 			
 			post_number := node.Name()

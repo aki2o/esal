@@ -111,19 +111,19 @@ func pipePeco(provider func(*io.PipeWriter), prompt string) (string, string, err
 	return strings.TrimRight(string(bytes), "\n"), status.String(), nil
 }
 
-func selectNodeByPeco(path string, directory bool) ([]string, error) {
+func selectNodeByPeco(path string, category_only bool) ([]string, error) {
 	path = "/"+CategoryOf(PhysicalPathOf(path))
 	
 	for {
 		provider := func(writer *io.PipeWriter) {
 			defer writer.Close()
 			
-			ls_process := &ls{ writer: writer, DirectoryOnly: directory }
+			ls_process := &ls{ writer: writer, CategoryOnly: category_only }
 			ls_process.printNodesIn(path, PhysicalPathOf(path))
 		}
 
 		var prompt string
-		if directory {
+		if category_only {
 			prompt = "Select category"
 		} else {
 			prompt = "Select post"
