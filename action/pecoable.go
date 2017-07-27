@@ -76,7 +76,7 @@ func pipePeco(provider func(*io.PipeWriter), prompt string) (string, string, err
 		defer to_self_writer.Close()
 		
 		peco := peco.New()
-		peco.Argv	= []string{"--on-cancel", "error", "--prompt", prompt+": "}
+		peco.Argv	= []string{"--on-cancel", "error", "--prompt", prompt+":"}
 		peco.Stdin	= from_provider_reader
 		peco.Stdout = to_self_writer
 		
@@ -139,9 +139,7 @@ func selectNodeByPeco(path string, directory bool) ([]string, error) {
 			path = selected
 		case "backward":
 			if path != "/" {
-				re, _ := regexp.Compile("/[^/]*$")
-				
-				path = re.ReplaceAllString(path, "")
+				re, _ := regexp.Compile("/[^/]+/?$")
 				path = re.ReplaceAllString(path, "")
 
 				if path == "" { path = "/" }

@@ -40,17 +40,14 @@ func (self *ls) Do(args []string) error {
 func (self *ls) printNodesIn(path string, physical_path string) {
 	writer := bufio.NewWriter(self.writer)
 
-	if len(path) > 1 {
-		re, _ := regexp.Compile("/$")
-		path = re.ReplaceAllString(path, "")
-	}
+	re, _ := regexp.Compile("/$")
+	path = re.ReplaceAllString(path, "")+"/"
 	
 	for _, node := range util.GetNodes(physical_path) {
 		node_physical_path := filepath.Join(physical_path, node.Name())
 		
 		if node.IsDir() {
-			node_path := util.DecodePath(node.Name())
-			if path != "" && path != "/" { node_path = path+"/"+node_path }
+			node_path := path+util.DecodePath(node.Name())
 			
 			if ! self.FileOnly {
 				fmt.Fprintln(writer, self.makeDirLine(node_path))
@@ -79,7 +76,7 @@ func (self *ls) printNodesIn(path string, physical_path string) {
 }
 
 func (self *ls) makeDirLine(path string) string {
-	return self.makePostStatPart(path, nil)+path+"/"
+	return self.makePostStatPart(nil)+path+"/"
 }
 
 func (self *ls) makeFileLine(path string, post *esa.PostResponse) string {
@@ -95,15 +92,15 @@ func (self *ls) makeFileLine(path string, post *esa.PostResponse) string {
 		if _, err := os.Stat(GetPostLockPath(post_number)); err == nil { lock = " *Lock*" }
 		if len(post.Tags) > 0 { tag = " #"+strings.Join(post.Tags, " #") }
 		
-		name_part = fmt.Sprintf("%s:%s%s %s%s", filepath.Join(path, post_number), wip, lock, post.Name, tag)
+		name_part = fmt.Sprintf("%s:%s%s %s%s", path+post_number, wip, lock, post.Name, tag)
 	} else {
-		name_part = fmt.Sprintf("%s: %s", filepath.Join(path, post_number), post.Name)
+		name_part = fmt.Sprintf("%s: %s", path+post_number, post.Name)
 	}
 
-	return self.makePostStatPart(path, post)+name_part
+	return self.makePostStatPart(post)+name_part
 }
 
-func (self *ls) makePostStatPart(path string, post *esa.PostResponse) string {
+func (self *ls) makePostStatPart(post *esa.PostResponse) string {
 	if !self.LongFormatRequired { return "" }
 
 	var create_user		string = ""
