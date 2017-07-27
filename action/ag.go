@@ -26,12 +26,9 @@ func init() {
 }
 
 func (self *ag) Do(args []string) error {
-	args, cmd_args := util.SplitByDoubleHyphen(args)
-
 	if len(args) == 0 { return errors.New("Require pattern!") }
 	
-	cmd_args = append([]string{"-G", ".md$", args[0]}, cmd_args...)
-	cmd_args = append(cmd_args, Context.BodyRoot())
+	cmd_args := []string{"-i", "-G", ".md$", args[0], Context.BodyRoot()}
 
 	path := ""
 	if len(args) > 1 {

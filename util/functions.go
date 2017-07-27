@@ -39,24 +39,6 @@ func RemoveDup(args []string) []string {
     return results
 }
 
-func SplitByDoubleHyphen(args []string) ([]string, []string) {
-	ret1 := []string{}
-	ret2 := []string{}
-	
-	not_yet := true
-	for _, e := range args {
-		if e == "--" {
-			not_yet = false
-		} else if not_yet {
-			ret1 = append(ret1, e)
-		} else {
-			ret2 = append(ret2, e)
-		}
-	}
-
-	return ret1, ret2
-}
-
 func EncodePath(path string) string {
 	separator := string(os.PathSeparator)
 	r := strings.NewReplacer("=", "-", "/", "_", "+", ".")
