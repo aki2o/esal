@@ -84,6 +84,14 @@ func ExcludePostName(path string) string {
 	}
 }
 
+func DirectoryFormat(category string) string {
+	if category == "" { return category }
+	if category == "/" { return category }
+
+	re, _ := regexp.Compile("/$")
+	return re.ReplaceAllString(category, "")+"/"
+}
+
 func ParentOf(category string) string {
 	re, _ := regexp.Compile("/[^/]+/?$")
 	ret := re.ReplaceAllString(category, "")

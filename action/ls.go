@@ -11,7 +11,6 @@ import (
 	"time"
 	"strconv"
 	"errors"
-	"regexp"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
@@ -40,9 +39,7 @@ func (self *ls) Do(args []string) error {
 func (self *ls) printNodesIn(path string, physical_path string) {
 	writer := bufio.NewWriter(self.writer)
 
-	re, _ := regexp.Compile("/$")
-	path = re.ReplaceAllString(path, "")+"/"
-	
+	path = DirectoryFormat(path)
 	for _, node := range util.GetNodes(physical_path) {
 		node_physical_path := filepath.Join(physical_path, node.Name())
 		
@@ -75,8 +72,8 @@ func (self *ls) printNodesIn(path string, physical_path string) {
 	writer.Flush()
 }
 
-func (self *ls) makeDirLine(path string) string {
-	return self.makePostStatPart(nil)+path+"/"
+func (self *ls) makeDirLine(node_path string) string {
+	return self.makePostStatPart(nil)+node_path+"/"
 }
 
 func (self *ls) makeFileLine(path string, post *esa.PostResponse) string {
