@@ -15,7 +15,7 @@ type uploadable struct {
 	Tags []string `short:"t" long:"tag" description:"Tag name labeling tha post." value-name:"TAG"`
 	Category string `short:"c" long:"category" description:"Category of the post." value-name:"CATEGORY"`
 	PostName string `short:"n" long:"name" description:"Name of the post." value-name:"NAME"`
-	Message string `short:"m" long:"message" description:"Commit message." default:"Update post." value-name:"MESSAGE"`
+	Message string `short:"m" long:"message" description:"Commit message." value-name:"MESSAGE"`
 	TagsByPecoRequired bool `short:"T" long:"tag-by-peco" description:"Choice tags by peco."`
 	CategoryByPecoRequired bool `short:"C" long:"category-by-peco" description:"Choice category by peco."`
 	MessageByScan bool `short:"M" long:"message-by-scan" description:"Input commit message."`
@@ -50,6 +50,7 @@ func (self *uploadable) setTags(post *esa.Post, default_value []string) {
 	}
 
 	post.Tags = tags
+	self.Tags = tags
 }
 
 func (self *uploadable) setCategory(post *esa.Post, default_value string) {
@@ -70,6 +71,7 @@ func (self *uploadable) setCategory(post *esa.Post, default_value string) {
 	}
 
 	post.Category = category
+	self.Category = category
 }
 
 func (self *uploadable) setName(post *esa.Post, default_value string) {
@@ -81,11 +83,14 @@ func (self *uploadable) setName(post *esa.Post, default_value string) {
 }
 
 func (self *uploadable) setMessage(post *esa.Post) {
-	if self.MessageByScan {
-		post.Message = util.ScanString("Commit Message: ")
+	message := "Update post."
+	
+	if self.Message != "" {
+		message = self.Message
+	} else if self.MessageByScan {
+		message = util.ScanString("Commit Message: ")
 	}
 
-	if post.Message == "" {
-		post.Message = self.Message
-	}
+	post.Message = message
+	self.Message = message
 }
