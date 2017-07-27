@@ -21,7 +21,7 @@ func (self *cd) Do(args []string) error {
 	if len(args) > 0 { path = args[0] }
 
 	var next_physical_path string = ""
-	if self.PecoRequired() {
+	if path == "" && self.PecoRequired() {
 		next_path, err := selectNodeByPeco(path, true)
 		if err != nil { return err }
 
