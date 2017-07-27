@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"strings"
 	"bytes"
-	"regexp"
 	"reflect"
 	"context"
 	log "github.com/sirupsen/logrus"
@@ -138,12 +137,7 @@ func selectNodeByPeco(path string, directory bool) ([]string, error) {
 		case "forward":
 			path = selected
 		case "backward":
-			if path != "/" {
-				re, _ := regexp.Compile("/[^/]+/?$")
-				path = re.ReplaceAllString(path, "")
-
-				if path == "" { path = "/" }
-			}
+			path = ParentOf(path)
 		default:
 			return strings.Split(selected, "\n"), nil
 		}

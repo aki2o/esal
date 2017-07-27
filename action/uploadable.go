@@ -59,10 +59,13 @@ func (self *uploadable) setCategory(post *esa.Post, default_value string) {
 	if self.Category != "" {
 		category = re.ReplaceAllString(self.Category, "")
 	} else if self.CategoryByPecoRequired {
-		categories, err := selectNodeByPeco(CategoryOf(Context.Cwd), true)
+		categories, err := selectNodeByPeco("/"+ParentOf(CategoryOf(Context.Cwd)), true)
 		if err == nil {
-			child_category := util.ScanString(fmt.Sprintf("Child Category of (%s): ", categories[0]))
-			category = re.ReplaceAllString(categories[0], "")+"/"+re.ReplaceAllString(child_category, "")
+			category = categories[0]
+			if category == "" { category = CategoryOf(Context.Cwd) }
+			
+			child_category := util.ScanString(fmt.Sprintf("Child Category of (%s): ", category))
+			category = re.ReplaceAllString(category, "")+re.ReplaceAllString(child_category, "")
 		}
 	}
 

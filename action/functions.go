@@ -74,13 +74,24 @@ func LoadPostLock(number_as_string string) ([]byte, error) {
 }
 
 func ExcludePostName(path string) string {
-	number_re, _ := regexp.Compile("(/|^)([0-9]+):[^/]+$")
-	matches	:= number_re.FindStringSubmatch(path)
+	re, _ := regexp.Compile("(/|^)([0-9]+):[^/]+$")
+	matches	:= re.FindStringSubmatch(path)
 
 	if len(matches) > 2 {
-		return number_re.ReplaceAllString(path, matches[1])+matches[2]
+		return re.ReplaceAllString(path, matches[1])+matches[2]
 	} else {
 		return path
+	}
+}
+
+func ParentOf(category string) string {
+	re, _ := regexp.Compile("/[^/]+/?$")
+	ret := re.ReplaceAllString(category, "")
+
+	if ret == "" {
+		return "/"
+	} else {
+		return ret
 	}
 }
 
