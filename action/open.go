@@ -27,13 +27,9 @@ func init() {
 func (self *open) Do(args []string) error {
 	if self.NewPost {
 		args = []string{""}
-	} else if self.PecoRequired() {
-		var path string = ""
+	} else if len(args) == 0 && self.PecoRequired() {
 		var err error
-	
-		if len(args) > 0 { path = args[0] }
-	
-		args, err = selectNodeByPeco(path, false)
+		args, err = selectNodeByPeco("", false)
 		if err != nil { return err }
 	}
 
