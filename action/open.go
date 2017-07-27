@@ -25,7 +25,9 @@ func init() {
 }
 
 func (self *open) Do(args []string) error {
-	if ! self.NewPost && self.PecoRequired() {
+	if self.NewPost {
+		args = []string{""}
+	} else if self.PecoRequired() {
 		var path string = ""
 		var err error
 	
