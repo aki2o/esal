@@ -18,6 +18,7 @@ type sync struct {
 	Force bool `short:"f" long:"force" description:"Exec with ignore last synchronized time."`
 	ByNumber bool `short:"n" long:"number" description:"Exec for only posts of numbers given as arguments."`
 	Quiet bool `short:"q" long:"quiet" description:"Exec quietly."`
+	RefreshedCategory string `short:"R" long:"refresh" description:"Remove category before exec." value-name:"CATEGORY"`
 	progress_bars map[string]*pb.ProgressBar
 	found_tags []string
 }
@@ -33,6 +34,12 @@ func (self *sync) Do(args []string) error {
 
 	self.found_tags = []string{}
 
+	if self.RefreshedCategory != "" {
+		if err := self.Refresh(self.RefreshedCategory); err != nil {
+			return err
+		}
+	}
+	
 	var err error
 	if self.ByNumber {
 		err = self.DoByNumber(args)
@@ -43,6 +50,22 @@ func (self *sync) Do(args []string) error {
 	self.saveTags()
 	
 	return err
+}
+
+func(self *sync) Refresh(path string) error {
+	find_process := &find{ Type: "u" }
+	node_paths, err := find_process.collectNodesIn(path)
+	if err != nil { return err }
+
+	for _, node_path := range node_paths {
+		_, post_number := DirectoryPathAndPostNumberOf(node_path)
+		
+		err := DeletePostData(post_number)
+		if err == nil { err = DeletePostBody(post_number) }
+		if err != nil { return err }
+	}
+
+	return os.RemoveAll(PhysicalPathOf(path))
 }
 
 func (self *sync) DoByNumber(args []string) error {

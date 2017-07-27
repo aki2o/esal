@@ -73,6 +73,14 @@ func LoadPostLock(number_as_string string) ([]byte, error) {
 	return ioutil.ReadFile(GetPostLockPath(number_as_string))
 }
 
+func DeletePostData(number_as_string string) error {
+	return os.Remove(GetPostDataPath(number_as_string))
+}
+
+func DeletePostBody(number_as_string string) error {
+	return os.Remove(GetPostBodyPath(number_as_string))
+}
+
 func ExcludePostName(path string) string {
 	re, _ := regexp.Compile("(/|^)([0-9]+):[^/]+$")
 	matches	:= re.FindStringSubmatch(path)
