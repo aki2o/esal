@@ -39,7 +39,7 @@ func (self *uploadable) setTags(post *esa.Post, default_value []string) {
 		provider := func(writer *io.PipeWriter) {
 			defer writer.Close()
 
-			tag_process := &tag{ writer: writer }
+			tag_process := &tag{ writer: writer, Separator: "\n" }
 			tag_process.PrintTags()
 		}
 
