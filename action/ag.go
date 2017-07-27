@@ -104,10 +104,10 @@ func (self *ag) printResult(writer io.Writer, ret string) error {
 
 		var post esa.PostResponse
 		if err := json.Unmarshal(bytes, &post); err != nil { return err }
-
+		
 		if self.category == "" && post.Category != "" { continue }
 		if len(post.Category) < len(self.category) { continue }
-		if ! strings.HasPrefix(post.Category, self.category+"/") { continue }
+		if ! strings.HasPrefix(post.FullName, self.category+"/") { continue }
 		
 		fmt.Fprintf(rich_writer, re.ReplaceAllString(line+"\n", fmt.Sprintf("%s:%s:%s: ", matches[1], matches[2], post.FullName)))
 	}
