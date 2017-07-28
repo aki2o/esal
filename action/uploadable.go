@@ -3,8 +3,6 @@ package action
 import (
 	"regexp"
 	"fmt"
-	"io"
-	"strings"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
 )
