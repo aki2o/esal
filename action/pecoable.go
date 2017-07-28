@@ -143,3 +143,31 @@ func selectNodeByPeco(path string, category_only bool) ([]string, error) {
 		}
 	}
 }
+
+func selectTagByPeco() ([]string, error) {
+	provider := func(writer *io.PipeWriter) {
+		defer writer.Close()
+
+		tag_process := &tag{ writer: writer, Separator: "\n" }
+		tag_process.PrintTags()
+	}
+
+	selected, _, err := pipePeco(provider, "Select tag")
+	if err != nil {	return []string{}, err }
+
+	return strings.Split(selected, "\n"), nil
+}
+
+func selectUserByPeco(prompt string) ([]string, error) {
+	provider := func(writer *io.PipeWriter) {
+		defer writer.Close()
+
+		members_process := &members{ writer: writer }
+		members_process.Do([]string{})
+	}
+
+	selected, _, err := pipePeco(provider, "Select "+prompt)
+	if err != nil {	return []string{}, err }
+
+	return strings.Split(selected, "\n"), nil
+}

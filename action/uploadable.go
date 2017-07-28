@@ -12,12 +12,12 @@ import (
 type uploadable struct {
 	Wip bool `short:"w" long:"wip" description:"Update the post as wip."`
 	Shipping bool `short:"s" long:"ship" description:"Ship the post."`
-	Tags []string `short:"t" long:"tag" description:"Tag name labeling tha post." value-name:"TAG"`
-	Category string `short:"c" long:"category" description:"Category of the post." value-name:"CATEGORY"`
+	Tags []string `short:"T" long:"tag" description:"Tag name labeling tha post." value-name:"TAG"`
+	Category string `short:"C" long:"category" description:"Category of the post." value-name:"CATEGORY"`
 	PostName string `short:"n" long:"name" description:"Name of the post." value-name:"NAME"`
 	Message string `short:"m" long:"message" description:"Commit message." value-name:"MESSAGE"`
-	TagsByPecoRequired bool `short:"T" long:"tag-by-peco" description:"Choice tags by peco."`
-	CategoryByPecoRequired bool `short:"C" long:"category-by-peco" description:"Choice category by peco."`
+	TagsByPecoRequired bool `short:"t" long:"tagp" description:"Choice tags by peco."`
+	CategoryByPecoRequired bool `short:"c" long:"categoryp" description:"Choice category by peco."`
 	MessageByScan bool `short:"M" long:"message-by-scan" description:"Input commit message."`
 }
 
@@ -36,17 +36,7 @@ func (self *uploadable) setTags(post *esa.Post, default_value []string) {
 	if len(self.Tags) > 0 {
 		tags = self.Tags
 	} else if self.TagsByPecoRequired {
-		provider := func(writer *io.PipeWriter) {
-			defer writer.Close()
-
-			tag_process := &tag{ writer: writer, Separator: "\n" }
-			tag_process.PrintTags()
-		}
-
-		selected, _, err := pipePeco(provider, "Select tag")
-		if err == nil {
-			tags = strings.Split(selected, "\n")
-		}
+		if selected_tags, err := selectTagByPeco(); err == nil { tags = selected_tags }
 	}
 
 	post.Tags = tags
