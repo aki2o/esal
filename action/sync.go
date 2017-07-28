@@ -7,6 +7,8 @@ import (
 	"time"
 	"fmt"
 	"os"
+	"io"
+	"strings"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/cheggaaa/pb.v1"
 	"github.com/aki2o/esal/util"
@@ -14,6 +16,7 @@ import (
 )
 
 type sync struct {
+	pecoable
 	AllRequired bool `short:"a" long:"all" description:"Exec for all queries."`
 	Force bool `short:"f" long:"force" description:"Exec with ignore last synchronized time."`
 	ByNumber bool `short:"n" long:"number" description:"Exec for only posts of numbers given as arguments."`
@@ -28,6 +31,16 @@ func init() {
 }
 
 func (self *sync) Do(args []string) error {
+	if len(args) == 0 && ! self.AllRequired && self.PecoRequired() {
+		var err error
+		if self.ByNumber {
+			args, err = selectNodeByPeco("", false)
+		} else {
+			args, err = self.selectQuery()
+		}
+		if err != nil { return err }
+	}
+	
 	if len(args) == 0 && !self.AllRequired {
 		return errors.New("Require query name!")
 	}
@@ -242,4 +255,19 @@ func (self *sync) saveTags() {
 	if err != nil {
 		log.WithFields(log.Fields{ "tags": self.found_tags, "error": err.Error() }).Error("failed to save tags")
 	}
+}
+
+func (self *sync) selectQuery() ([]string, error) {
+	provider := func(writer *io.PipeWriter) {
+		defer writer.Close()
+
+		for _, query := range config.Team.Queries {
+			fmt.Fprintln(writer, query.Name)
+		}
+	}
+
+	selected, _, err := pipePeco(provider, "Query")
+	if err != nil { return []string{}, err }
+
+	return strings.Split(selected, "\n"), nil
 }
