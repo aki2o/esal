@@ -199,6 +199,12 @@ func (self *sync) processQuery(query_config config.Query) bool {
 			
 			query.Add("updated", ">"+query_config.SynchronizedAt.Add(prev_day_duration).Format("2006-01-02"))
 		}
+		if self.RefreshedCategory != "" {
+			category := CategoryOf(PhysicalPathOf(self.RefreshedCategory))
+			if category != "" {
+				query.Add("in", category)
+			}
+		}
 		
 		log.WithFields(log.Fields{ "page": page_index, "fetched_count": fetched_count }).Debug("get post")
 		res, err := Context.Client.Post.GetPosts(Context.Team, query)
