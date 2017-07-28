@@ -197,7 +197,7 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 		parser.Name = processor_name
 		parser.Usage = repo.GetUsage(processor_name)
 		
-		args, err = parser.ParseArgs(args)
+		args, err = parser.ParseArgs(args[1:])
 		if err != nil {
 			PutError(err)
 			continue
@@ -212,7 +212,7 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 			default:
 				PutError(err)
 			}
-			return
+			continue
 		}
 	}
 }
