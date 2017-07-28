@@ -7,9 +7,7 @@ import (
 	"encoding/json"
 	"bufio"
 	"errors"
-	"regexp"
 	"os"
-	"strconv"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
@@ -17,9 +15,7 @@ import (
 
 type find struct {
 	pecoable
-	Type string `short:"t" long:"type" description:"Node type ident. one of c(ategory), p(ost), w(ip), s(hipped), l(ocked), u(nlocked)." value-name:"IDENT"`
-	NamePattern string `short:"n" long:"name" description:"Node name pattern." value-name:"PATTERN"`
-	name_re *regexp.Regexp
+	matchable
 }
 
 func init() {
@@ -50,12 +46,6 @@ func (self *find) collectNodesIn(path string) ([]string, error) {
 	physical_path := PhysicalPathOf(path)
 	path = DirectoryFormat(path)
 
-	if self.NamePattern != "" {
-		re, err := regexp.Compile(self.NamePattern)
-		if err != nil { return []string{}, err }
-		self.name_re = re
-	}
-	
 	for _, node := range util.GetNodes(physical_path) {
 		node_physical_path := filepath.Join(physical_path, node.Name())
 
@@ -63,7 +53,7 @@ func (self *find) collectNodesIn(path string) ([]string, error) {
 			decoded_name := util.DecodePath(node.Name())
 			node_path := path+decoded_name
 
-			if self.matchesCategory(decoded_name) {
+			if self.matchCategory(decoded_name) {
 				founds = append(founds, node_path+"/")
 			}
 
@@ -84,29 +74,11 @@ func (self *find) collectNodesIn(path string) ([]string, error) {
 				continue
 			}
 
-			if self.matchesPost(&post) {
+			if self.matchPost(&post) {
 				founds = append(founds, fmt.Sprintf("%s%s: %s", path, post_number, post.Name))
 			}
 		}
 	}
 
 	return founds, nil
-}
-
-func (self *find) matchesCategory(node_name string) bool {
-	if self.Type != "" && self.Type != "c" { return false }
-	if self.name_re != nil && ! self.name_re.MatchString(node_name) { return false }
-	
-	return true
-}
-
-func (self *find) matchesPost(post *esa.PostResponse) bool {
-	if self.Type == "c" { return false }
-	if self.Type == "w" && ! post.Wip { return false }
-	if self.Type == "s" && post.Wip { return false }
-	if self.Type == "l" && ! util.Exists(GetPostLockPath(strconv.Itoa(post.Number))) { return false }
-	if self.Type == "u" && util.Exists(GetPostLockPath(strconv.Itoa(post.Number))) { return false }
-	if self.name_re != nil && ! self.name_re.MatchString(post.Name) { return false }
-	
-	return true
 }
