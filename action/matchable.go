@@ -10,16 +10,16 @@ import (
 )
 
 type matchable struct {
-	Type string `short:"t" long:"type" description:"Node type ident. one of c(ategory), p(ost), w(ip), s(hipped), l(ocked), u(nlocked)." value-name:"IDENT"`
-	NamePattern string `short:"n" long:"name" description:"Node name pattern." value-name:"PATTERN"`
+	Type string `long:"type" description:"Node type ident. one of c(ategory), p(ost), w(ip), s(hipped), l(ocked), u(nlocked)." value-name:"IDENT"`
+	NamePattern string `long:"name" description:"Node name pattern." value-name:"PATTERN"`
 	Tags []string `short:"T" long:"tag" description:"Tag name labeling tha post." value-name:"TAG"`
 	TagsByPecoRequired bool `short:"t" long:"tagp" description:"Choice tags by peco."`
 	CreateUsers []string `short:"C" long:"cuser" description:"User screen name create the post." value-name:"USER"`
 	CreateUsersByPecoRequired bool `short:"c" long:"cuserp" description:"Choice user screen name by peco."`
 	UpdateUsers []string `short:"U" long:"uuser" description:"User screen name last update the post." value-name:"USER"`
 	UpdateUsersByPecoRequired bool `short:"u" long:"uuserp" description:"Choice user screen name by peco."`
-	CreateTimeCondition string `short:"t" long:"ctime" description:"Created time condition (same Linux find command) of the post." value-name:"VALUE"`
-	UpdateTimeCondition string `short:"T" long:"utime" description:"Updated time condition (same Linux find command) of the post." value-name:"VALUE"`
+	CreateTimeCondition string `long:"ctime" description:"Created time condition (same Linux find command) of the post." value-name:"VALUE"`
+	UpdateTimeCondition string `long:"utime" description:"Updated time condition (same Linux find command) of the post." value-name:"VALUE"`
 	name_re *regexp.Regexp
 }
 
