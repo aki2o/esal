@@ -127,7 +127,7 @@ func (self *IshellAdapter) Adapt(ctx *ishell.Context) {
 }
 
 func (self *IshellAdapter) Run(args []string) {
-	var buf bytes.Buffer
+	var buf *bytes.Buffer
 
 	args_list := SplitByPipe(args)
 	for idx, args := range args_list {
@@ -165,7 +165,7 @@ func (self *IshellAdapter) Run(args []string) {
 		if idx == 0 {
 			processor.SetReader(os.Stdin)
 		} else {
-			processor.SetReader(&buf)
+			processor.SetReader(buf)
 		}
 
 		if idx + 1 == len(args_list) {
@@ -180,8 +180,8 @@ func (self *IshellAdapter) Run(args []string) {
 			//
 			//   http://christina04.hatenablog.com/entry/2017/01/06/190000
 			//
-			buf = bytes.Buffer{}
-			processor.SetWriter(&buf)
+			buf = new(bytes.Buffer)
+			processor.SetWriter(buf)
 		}
 
 		err = processor.Do(args)
