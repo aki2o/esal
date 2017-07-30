@@ -16,6 +16,7 @@ import (
 type Processable interface {
 	Do(args []string) error
 	SetWriter(writer io.Writer)
+	SetReader(reader io.Reader)
 }
 
 type ProcessorHelpRequired struct {}
@@ -81,19 +82,38 @@ func (self *ProcessorRepository) GetUsage(name string) string {
 }
 
 type ProcessIO struct {
-	writer io.Writer
+	Writer io.Writer
+	Reader io.Reader
 }
 
 func (self *ProcessIO) SetWriter(writer io.Writer) {
-	self.writer = writer
+	self.Writer = writer
+}
+
+func (self *ProcessIO) SetReader(reader io.Reader) {
+	self.Reader = reader
 }
 
 func (self *ProcessIO) Println(a ...interface{}) {
-	fmt.Fprintln(self.writer, a...)
+	fmt.Fprintln(self.Writer, a...)
 }
 
 func (self *ProcessIO) Printf(format string, a ...interface{}) {
-	fmt.Fprintf(self.writer, format, a...)
+	fmt.Fprintf(self.Writer, format, a...)
+}
+
+func (self *ProcessIO) ScanArgs() []string {
+	// 引数が無い場合、パイプで渡された出力を引数として受け取る
+	bytes, err := ioutil.ReadAll(self.Reader)
+	if err != nil { return []string{} }
+	
+	args := strings.Split(string(bytes), "\n")
+	// 改行で終わっている場合は、それは含めない
+	if len(args) > 0 && args[len(args)-1] == "" {
+		args = args[0:len(args)-1]
+	}
+
+	return args
 }
 
 type IshellAdapter struct {
@@ -141,15 +161,10 @@ func (self *IshellAdapter) Run(args []string) {
 			return
 		}
 
-		if idx > 0 && len(args) == 0 {
-			// 引数が無い場合、パイプで渡された出力を引数として受け取る
-			bytes, _ := ioutil.ReadAll(&buf)
-			args = strings.Split(string(bytes), "\n")
-
-			// 改行で終わっている場合は、それは含めない
-			if len(args) > 0 && args[len(args)-1] == "" {
-				args = args[0:len(args)-1]
-			}
+		if idx == 0 {
+			processor.SetReader(os.Stdin)
+		} else {
+			processor.SetReader(&buf)
 		}
 
 		if idx + 1 == len(args_list) {
@@ -169,7 +184,6 @@ func (self *IshellAdapter) Run(args []string) {
 		}
 
 		err = processor.Do(args)
-		
 		if err != nil {
 			err_type := reflect.ValueOf(err)
 			switch fmt.Sprintf("%s", err_type.Type()) {

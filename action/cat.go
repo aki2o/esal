@@ -4,7 +4,7 @@ import (
 	"errors"
 	"encoding/json"
 	"strconv"
-	"os/exec"
+	osexec "os/exec"
 	"github.com/aki2o/esal/util"
 )
 
@@ -58,6 +58,8 @@ func init() {
 }
 
 func (self *cat) Do(args []string) error {
+	if len(args) == 0 { args = self.ScanArgs() }
+
 	if len(args) == 0 && self.PecoRequired() {
 		var err error
 		args, err = selectNodeByPeco("", false)
@@ -83,7 +85,7 @@ func (self *cat) process(path string) error {
 		var post postProperty
 		if err := json.Unmarshal(bytes, &post); err != nil { return err }
 
-		if err := exec.Command(BrowserCommand(), post.URL).Run(); err != nil { return err }
+		if err := osexec.Command(BrowserCommand(), post.URL).Run(); err != nil { return err }
 	} else if self.JsonRequired {
 		bytes, err := LoadPostData(post_number)
 		if err != nil { return err }

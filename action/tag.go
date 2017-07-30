@@ -46,6 +46,8 @@ func (self *tag) PrintTags() error {
 }
 
 func (self *tag) AddTags(tags []string) error {
+	if len(tags) == 0 { tags = self.ScanArgs() }
+
 	current_tags, err := self.load()
 	if err != nil { return err }
 

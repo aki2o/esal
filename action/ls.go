@@ -27,6 +27,8 @@ func init() {
 }
 
 func (self *ls) Do(args []string) error {
+	if len(args) == 0 { args = self.ScanArgs() }
+
 	var path string = ""
 	if len(args) > 0 { path = args[0] }
 	

@@ -3,7 +3,7 @@ package action
 import (
 	"errors"
 	"os"
-	"os/exec"
+	osexec "os/exec"
 	"encoding/json"
 	"io/ioutil"
 	"net/url"
@@ -26,6 +26,8 @@ func init() {
 }
 
 func (self *open) Do(args []string) error {
+	if len(args) == 0 { args = self.ScanArgs() }
+
 	if self.NewPost {
 		args = []string{""}
 	} else if len(args) == 0 && self.PecoRequired() {
@@ -73,7 +75,7 @@ func (self *open) openByEditor(path string, dir_path string, post_number string,
 		if err := lock_process.Do([]string{ path }); err != nil { return err }
 	}
 	
-	cmd := exec.Command(editor, real_path)
+	cmd := osexec.Command(editor, real_path)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -114,7 +116,7 @@ func (self *open) openByBrowser(dir_path string, post_number string) error {
 	url, err := self.getURL(dir_path, post_number)
 	if err != nil { return err }
 	
-	if err := exec.Command(BrowserCommand(), url).Run(); err != nil { return err }
+	if err := osexec.Command(BrowserCommand(), url).Run(); err != nil { return err }
 	return nil
 }
 

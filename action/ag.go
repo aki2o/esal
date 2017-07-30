@@ -1,7 +1,7 @@
 package action
 
 import (
-	"os/exec"
+	osexec "os/exec"
 	"fmt"
 	"regexp"
 	"io"
@@ -44,7 +44,7 @@ func (self *ag) Do(args []string) error {
 }
 
 func (self *ag) process(cmd_args []string) error {
-	out, err := exec.Command("ag", cmd_args...).Output()
+	out, err := osexec.Command("ag", cmd_args...).Output()
 	if err != nil { return err }
 
 	return self.printResult(string(out))
@@ -54,7 +54,7 @@ func (self *ag) processByPeco(cmd_args []string) error {
 	provider := func(writer *io.PipeWriter) {
 		defer writer.Close()
 
-		out, err := exec.Command("ag", cmd_args...).Output()
+		out, err := osexec.Command("ag", cmd_args...).Output()
 		if err != nil { return }
 
 		self.SetWriter(writer)

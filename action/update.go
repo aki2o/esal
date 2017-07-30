@@ -22,6 +22,8 @@ func init() {
 }
 
 func (self *update) Do(args []string) error {
+	if len(args) == 0 { args = self.ScanArgs() }
+
 	if len(args) == 0 && self.PecoRequired() {
 		var err error
 		args, err = selectNodeByPeco("", false)

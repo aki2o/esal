@@ -19,6 +19,8 @@ func init() {
 }
 
 func (self *regist) Do(args []string) error {
+	if len(args) == 0 { args = self.ScanArgs() }
+
 	var regist_file_path = ""
 	if len(args) > 0 { regist_file_path = args[0] }
 
