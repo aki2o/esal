@@ -103,7 +103,8 @@ func (self *ProcessIO) Printf(format string, a ...interface{}) {
 }
 
 func (self *ProcessIO) ScanArgs() []string {
-	// 引数が無い場合、パイプで渡された出力を引数として受け取る
+	if self.Reader == os.Stdin { return []string{} }
+	
 	bytes, err := ioutil.ReadAll(self.Reader)
 	if err != nil { return []string{} }
 	
