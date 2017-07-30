@@ -4,12 +4,18 @@ import (
 	"os"
 	"reflect"
 	"fmt"
+	"errors"
+	"io"
+	"io/ioutil"
+	"strings"
+	"bytes"
 	"github.com/abiosoft/ishell"
 	flags "github.com/jessevdk/go-flags"
 )
 
 type Processable interface {
 	Do(args []string) error
+	SetWriter(writer io.Writer)
 }
 
 type ProcessorHelpRequired struct {}
@@ -74,11 +80,25 @@ func (self *ProcessorRepository) GetUsage(name string) string {
 	return self.usages[name]
 }
 
+type ProcessIO struct {
+	writer io.Writer
+}
+
+func (self *ProcessIO) SetWriter(writer io.Writer) {
+	self.writer = writer
+}
+
+func (self *ProcessIO) Println(a ...interface{}) {
+	fmt.Fprintln(self.writer, a...)
+}
+
+func (self *ProcessIO) Printf(format string, a ...interface{}) {
+	fmt.Fprintf(self.writer, format, a...)
+}
+
 type IshellAdapter struct {
-	ProcessorGenerator func() Processable
+	ProcessorRepository *ProcessorRepository
 	ProcessorName string
-	ProcessorDescription string
-	ProcessorUsage string
 }
 
 func (self *IshellAdapter) Adapt(ctx *ishell.Context) {
@@ -86,26 +106,79 @@ func (self *IshellAdapter) Adapt(ctx *ishell.Context) {
 }
 
 func (self *IshellAdapter) Run(args []string) {
-	processor := self.ProcessorGenerator()
-	parser := flags.NewParser(processor, flags.Default)
-	parser.Name = self.ProcessorName
-	parser.Usage = self.ProcessorUsage
-	
-	args, err := parser.ParseArgs(args)
-	if err != nil {
-		PutError(err)
-		return
-	}
-	
-	err = processor.Do(args)
-	if err != nil {
-		err_type := reflect.ValueOf(err)
-		switch fmt.Sprintf("%s", err_type.Type()) {
-		case "util.ProcessorHelpRequired":
-			parser.WriteHelp(os.Stderr)
-		default:
-			PutError(err)
+	var buf bytes.Buffer
+
+	args_list := SplitByPipe(args)
+	for idx, args := range args_list {
+		processor_name := ""
+		if idx == 0 {
+			processor_name = self.ProcessorName
+		} else if len(args) > 0 {
+			processor_name = args[0]
+
+			args = args[1:]
 		}
-		return
+
+		if processor_name == "" {
+			PutError(errors.New("Input is invalid!"))
+			return
+		}
+
+		processor_generator := self.ProcessorRepository.GetProcessorGenerator(processor_name)
+		if processor_generator == nil {
+			PutError(errors.New("Unknown command : "+processor_name))
+			return
+		}
+
+		processor := processor_generator()
+		parser := flags.NewParser(processor, flags.Default)
+		parser.Name = processor_name
+		parser.Usage = self.ProcessorRepository.GetUsage(processor_name)
+		
+		args, err := parser.ParseArgs(args)
+		if err != nil {
+			PutError(err)
+			return
+		}
+
+		if idx > 0 && len(args) == 0 {
+			// 引数が無い場合、パイプで渡された出力を引数として受け取る
+			bytes, _ := ioutil.ReadAll(&buf)
+			args = strings.Split(string(bytes), "\n")
+
+			// 改行で終わっている場合は、それは含めない
+			if len(args) > 0 && args[len(args)-1] == "" {
+				args = args[0:len(args)-1]
+			}
+		}
+
+		if idx + 1 == len(args_list) {
+			// 最後のコマンドは、標準出力へ出力
+			processor.SetWriter(os.Stdout)
+		} else {
+			// 後続のコマンドがある場合は、出力をバッファに溜める
+			//
+			// NOTE:
+			//   io.Pipe() を使いたかったけど、同じ関数内で Writer/Reader を使うと
+			//   デッドロックしてしまい、それを回避する実装が思いつかなかった
+			//
+			//   http://christina04.hatenablog.com/entry/2017/01/06/190000
+			//
+			buf = bytes.Buffer{}
+			processor.SetWriter(&buf)
+		}
+
+		err = processor.Do(args)
+		
+		if err != nil {
+			err_type := reflect.ValueOf(err)
+			switch fmt.Sprintf("%s", err_type.Type()) {
+			case "util.ProcessorHelpRequired":
+				parser.WriteHelp(os.Stderr)
+			default:
+				PutError(err)
+			}
+			return
+		}
 	}
 }

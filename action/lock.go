@@ -6,6 +6,7 @@ import (
 )
 
 type lock struct {
+	util.ProcessIO
 	pecoable
 }
 

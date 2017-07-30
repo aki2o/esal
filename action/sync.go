@@ -16,6 +16,7 @@ import (
 )
 
 type sync struct {
+	util.ProcessIO
 	pecoable
 	AllRequired bool `short:"a" long:"all" description:"Exec for all queries."`
 	Force bool `short:"f" long:"force" description:"Exec with ignore last synchronized time."`
@@ -234,7 +235,7 @@ func (self *sync) processQuery(query_config config.Query) bool {
 			
 			if util.Exists(GetPostLockPath(strconv.Itoa(post.Number))) {
 				log.WithFields(log.Fields{ "number": post.Number }).Info("skip locked post")
-				fmt.Printf("Skip a locked post '%d: %s'\n", post.Number, post.FullName)
+				fmt.Fprintf(os.Stderr, "Skip a locked post '%d: %s'\n", post.Number, post.FullName)
 				continue
 			}
 			

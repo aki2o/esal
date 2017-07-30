@@ -8,7 +8,9 @@ import (
 	"github.com/aki2o/esal/util"
 )
 
-type mv struct {}
+type mv struct {
+	util.ProcessIO
+}
 
 func init() {
 	registProcessor(func() util.Processable { return &mv{} }, "mv", "Move post, category.", "POST_OR_CATEGORY... CATEGORY")

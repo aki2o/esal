@@ -8,6 +8,7 @@ import (
 )
 
 type cd struct {
+	util.ProcessIO
 	pecoable
 }
 

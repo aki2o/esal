@@ -149,20 +149,14 @@ func ProcessInteractive(name string, repo *ProcessorRepository) {
 	shell := ishell.New()
 
 	for _, processor_name := range repo.ProcessorNames() {
-		processor_generator	:= repo.GetProcessorGenerator(processor_name)
-		description			:= repo.GetDescription(processor_name)
-		usage				:= repo.GetUsage(processor_name)
-
 		adapter := &IshellAdapter{
-			ProcessorGenerator: processor_generator,
+			ProcessorRepository: repo,
 			ProcessorName: processor_name,
-			ProcessorDescription: description,
-			ProcessorUsage: usage,
 		}
 
 		shell.AddCmd(&ishell.Cmd{
 			Name: processor_name,
-			Help: fmt.Sprintf("%s\nUsage:\n  %s %s\n", description, processor_name, usage),
+			// Help: fmt.Sprintf("%s\nUsage:\n  %s %s\n", description, processor_name, usage),
 			Func: adapter.Adapt,
 		})
 	}
@@ -215,4 +209,20 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 			continue
 		}
 	}
+}
+
+func SplitByPipe(args []string) [][]string {
+	ret := [][]string{}
+	nargs := []string{}
+	
+	for _, arg := range args {
+		if arg == "|" {
+			ret = append(ret, nargs)
+			nargs = []string{}
+		} else {
+			nargs = append(nargs, arg)
+		}
+	}
+
+	return append(ret, nargs)
 }

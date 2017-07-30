@@ -2,7 +2,6 @@ package action
 
 import (
 	"errors"
-	"fmt"
 	"encoding/json"
 	"strconv"
 	"os/exec"
@@ -10,6 +9,7 @@ import (
 )
 
 type cat struct {
+	util.ProcessIO
 	pecoable
 	ByBrowser bool `short:"b" long:"browser" description:"Open by browser."`
 	JsonRequired bool `short:"j" long:"json" description:"Show properties as json."`
@@ -101,12 +101,12 @@ func (self *cat) process(path string) error {
 			json_bytes, _ = json.MarshalIndent(post, "", "\t")
 		}
 		
-		fmt.Println(string(json_bytes))
+		self.Println(string(json_bytes))
 	} else {
 		bytes, err := LoadPostBody(post_number)
 		if err != nil { return err }
 		
-		fmt.Println(string(bytes))
+		self.Println(string(bytes))
 	}
 	return nil
 }

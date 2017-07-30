@@ -12,7 +12,9 @@ import(
 	"github.com/aki2o/esal/util"
 )
 
-type query struct {}
+type query struct {
+	util.ProcessIO
+}
 
 func init() {
 	registProcessor(func() util.Processable { return &query{} }, "query", "Configure query.", "")

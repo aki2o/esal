@@ -85,13 +85,9 @@ func main() {
 				
 				if err := action.SetupContext(team, detectAccessToken(ctx, team), false); err != nil { panic(err) }
 
-				repo			:= action.ProcessorRepository()
-				processor_name	:= "sync"
-
 				adapter := &util.IshellAdapter{
-					ProcessorGenerator: repo.GetProcessorGenerator(processor_name),
-					ProcessorName: processor_name,
-					ProcessorUsage: repo.GetUsage(processor_name),
+					ProcessorRepository: action.ProcessorRepository(),
+					ProcessorName: "sync",
 				}
 
 				adapter.Run(ctx.Args()[1:])
@@ -114,13 +110,9 @@ func main() {
 				
 				if err := action.SetupContext(team, detectAccessToken(ctx, team), false); err != nil { panic(err) }
 
-				repo			:= action.ProcessorRepository()
-				processor_name	:= "members"
-
 				adapter := &util.IshellAdapter{
-					ProcessorGenerator: repo.GetProcessorGenerator(processor_name),
-					ProcessorName: processor_name,
-					ProcessorUsage: repo.GetUsage(processor_name),
+					ProcessorRepository: action.ProcessorRepository(),
+					ProcessorName: "members",
 				}
 
 				adapter.Run(ctx.Args()[1:])

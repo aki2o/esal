@@ -5,15 +5,14 @@ import (
 	"path/filepath"
 	"strings"
 	"encoding/json"
-	"bufio"
 	"errors"
-	"os"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
 )
 
 type find struct {
+	util.ProcessIO
 	pecoable
 	matchable
 }
@@ -30,14 +29,10 @@ func (self *find) Do(args []string) error {
 		return errors.New("Require category!")
 	}
 	
-	writer := bufio.NewWriter(os.Stdout)
-
 	found_paths, err := self.collectNodesIn(path)
 	if err != nil { return err }
 	
-	fmt.Fprintln(writer, strings.Join(found_paths, "\n"))
-	
-	writer.Flush()
+	self.Println(strings.Join(found_paths, "\n"))
 	return nil
 }
 

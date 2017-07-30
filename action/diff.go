@@ -3,12 +3,12 @@ package action
 import (
 	"errors"
 	"strconv"
-	"fmt"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/aki2o/esal/util"
 )
 
 type diff struct {
+	util.ProcessIO
 	pecoable
 }
 
@@ -44,7 +44,7 @@ func (self *diff) process(path string) error {
 
 	dmp := diffmatchpatch.New()
 	diffs := dmp.DiffMain(string(body_bytes), latest_postres.BodyMd, false)
-	fmt.Println(dmp.DiffPrettyText(diffs))
+	self.Println(dmp.DiffPrettyText(diffs))
 
 	return nil
 }

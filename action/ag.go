@@ -5,16 +5,15 @@ import (
 	"fmt"
 	"regexp"
 	"io"
-	"bufio"
 	"strings"
 	"errors"
 	"encoding/json"
-	"os"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
 )
 
 type ag struct {
+	util.ProcessIO
 	pecoable
 	matchable
 	ByBrowser bool `short:"b" long:"browser" description:"Open peco results by browser."`
@@ -48,7 +47,7 @@ func (self *ag) process(cmd_args []string) error {
 	out, err := exec.Command("ag", cmd_args...).Output()
 	if err != nil { return err }
 
-	return self.printResult(os.Stdout, string(out))
+	return self.printResult(string(out))
 }
 
 func (self *ag) processByPeco(cmd_args []string) error {
@@ -58,7 +57,8 @@ func (self *ag) processByPeco(cmd_args []string) error {
 		out, err := exec.Command("ag", cmd_args...).Output()
 		if err != nil { return }
 
-		self.printResult(writer, string(out))
+		self.SetWriter(writer)
+		self.printResult(string(out))
 	}
 
 	selected, _, err := pipePeco(provider, "Query")
@@ -89,8 +89,7 @@ func (self *ag) processByPeco(cmd_args []string) error {
 	return nil
 }
 
-func (self *ag) printResult(writer io.Writer, ret string) error {
-	rich_writer := bufio.NewWriter(writer)
+func (self *ag) printResult(ret string) error {
 	re, _ := regexp.Compile(fmt.Sprintf("^%s/([0-9]+)\\.md:([0-9]+):", Context.BodyRoot()))
 	
 	for _, line := range strings.Split(ret, "\n") {
@@ -110,9 +109,8 @@ func (self *ag) printResult(writer io.Writer, ret string) error {
 		// 指定された条件にマッチしない記事だったら弾く
 		if ! self.matchPost(&post) { continue }
 		
-		fmt.Fprintf(rich_writer, re.ReplaceAllString(line+"\n", fmt.Sprintf("%s:%s:%s: ", matches[1], matches[2], post.FullName)))
+		self.Println(re.ReplaceAllString(line, fmt.Sprintf("%s:%s:%s: ", matches[1], matches[2], post.FullName)))
 	}
 	
-	rich_writer.Flush()
 	return nil
 }

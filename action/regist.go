@@ -5,12 +5,12 @@ import (
 	"io/ioutil"
 	"regexp"
 	"path/filepath"
-	"fmt"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
 )
 
 type regist struct {
+	util.ProcessIO
 	uploadable
 }
 
@@ -37,15 +37,15 @@ func (self *regist) Do(args []string) error {
 	self.setMessage(&post)
 	if err := self.setBody(&post, regist_file_path); err != nil { return err }
 	
-	fmt.Println("Start upload...")
+	self.Println("Start upload...")
 	res, err := Context.Client.Post.Create(Context.Team, post)
 	if err != nil { return err }
-	fmt.Println("Finished upload.")
+	self.Println("Finished upload.")
 
 	err = SavePost(res)
 	if err != nil { return err }
 
-	fmt.Printf("Registed %d: %s.", res.Number, res.FullName)
+	self.Printf("Registed %d: %s.", res.Number, res.FullName)
 	return nil
 }
 

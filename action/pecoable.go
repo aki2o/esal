@@ -118,7 +118,8 @@ func selectNodeByPeco(path string, category_only bool) ([]string, error) {
 		provider := func(writer *io.PipeWriter) {
 			defer writer.Close()
 			
-			ls_process := &ls{ writer: writer, CategoryOnly: category_only }
+			ls_process := &ls{ CategoryOnly: category_only }
+			ls_process.SetWriter(writer)
 			ls_process.printNodesIn(path, PhysicalPathOf(path))
 		}
 
@@ -148,7 +149,8 @@ func selectTagByPeco() ([]string, error) {
 	provider := func(writer *io.PipeWriter) {
 		defer writer.Close()
 
-		tag_process := &tag{ writer: writer, Separator: "\n" }
+		tag_process := &tag{ Separator: "\n" }
+		tag_process.SetWriter(writer)
 		tag_process.PrintTags()
 	}
 
@@ -162,7 +164,8 @@ func selectUserByPeco(prompt string) ([]string, error) {
 	provider := func(writer *io.PipeWriter) {
 		defer writer.Close()
 
-		members_process := &members{ writer: writer }
+		members_process := &members{}
+		members_process.SetWriter(writer)
 		members_process.Do([]string{})
 	}
 

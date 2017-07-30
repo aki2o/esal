@@ -1,21 +1,19 @@
 package action
 
 import (
-	"io"
 	"os"
 	"path/filepath"
 	"encoding/json"
 	"bufio"
 	"io/ioutil"
-	"fmt"
 	"strings"
 	"errors"
 	"github.com/aki2o/esal/util"
 )
 
 type tag struct {
+	util.ProcessIO
 	Separator string `short:"s" long:"separator" description:"Charactor to separate tags." default:"\n" value-name:"SEPARATOR"`
-	writer io.Writer
 }
 
 type tagStore struct {
@@ -23,7 +21,7 @@ type tagStore struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &tag{ writer: os.Stdout } }, "tag", "Print/Add tag.", "")
+	registProcessor(func() util.Processable { return &tag{} }, "tag", "Print/Add tag.", "")
 }
 
 func (self *tag) Do(args []string) error {
@@ -43,10 +41,7 @@ func (self *tag) PrintTags() error {
 	tags, err := self.load()
 	if err != nil { return err }
 
-	writer := bufio.NewWriter(self.writer)
-	fmt.Fprint(writer, strings.Join(tags, self.Separator))
-	writer.Flush()
-	
+	self.Println(strings.Join(tags, self.Separator))
 	return nil
 }
 

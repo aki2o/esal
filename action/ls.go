@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 	"encoding/json"
-	"io"
-	"bufio"
 	"os"
 	"time"
 	"strconv"
@@ -17,15 +15,15 @@ import (
 )
 
 type ls struct {
+	util.ProcessIO
 	LongFormatRequired bool `short:"l" long:"long" description:"Print long format."`
 	Recursive bool `short:"r" long:"recursive" description:"Exec recursively."`
 	CategoryOnly bool `short:"c" long:"category" description:"Print only category."`
 	PostOnly bool `short:"p" long:"post" description:"Print only post."`
-	writer io.Writer
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &ls{ writer: os.Stdout } }, "ls", "Print a list of category and post information.", "[OPTIONS]")
+	registProcessor(func() util.Processable { return &ls{} }, "ls", "Print a list of category and post information.", "[OPTIONS]")
 }
 
 func (self *ls) Do(args []string) error {
@@ -37,8 +35,6 @@ func (self *ls) Do(args []string) error {
 }
 
 func (self *ls) printNodesIn(path string, physical_path string) {
-	writer := bufio.NewWriter(self.writer)
-
 	path = DirectoryFormat(path)
 	for _, node := range util.GetNodes(physical_path) {
 		node_physical_path := filepath.Join(physical_path, node.Name())
@@ -47,8 +43,7 @@ func (self *ls) printNodesIn(path string, physical_path string) {
 			node_path := path+util.DecodePath(node.Name())
 			
 			if ! self.PostOnly {
-				fmt.Fprintln(writer, self.makeDirLine(node_path))
-				writer.Flush()
+				self.Println(self.makeDirLine(node_path))
 			}
 
 			if self.Recursive { self.printNodesIn(node_path, node_physical_path) }
@@ -64,12 +59,10 @@ func (self *ls) printNodesIn(path string, physical_path string) {
 				log.WithFields(log.Fields{ "name": node.Name(), "path": node_physical_path }).Error("Failed to load post")
 				util.PutError(errors.New("Failed to load post data of "+post_number+"!"))
 			} else {
-				fmt.Fprintln(writer, self.makeFileLine(path, &post))
+				self.Println(self.makeFileLine(path, &post))
 			}
 		}
 	}
-
-	writer.Flush()
 }
 
 func (self *ls) makeDirLine(node_path string) string {

@@ -10,6 +10,7 @@ import (
 )
 
 type update struct {
+	util.ProcessIO
 	pecoable
 	uploadable
 	WithoutBody bool `short:"B" long:"nobody" description:"Exec without body."`
@@ -56,10 +57,10 @@ func (self *update) process(path string) error {
 	self.setMessage(&new_post)
 	if err := self.setBody(&new_post, post_number); err != nil { return err }
 	
-	fmt.Println("Start upload...")
+	self.Println("Start upload...")
 	res, err := Context.Client.Post.Update(Context.Team, post.Number, new_post)
 	if err != nil { return err }
-	fmt.Println("Finished upload.")
+	self.Println("Finished upload.")
 	
 	if res.OverLapped { fmt.Fprintf(os.Stderr, "Conflict happened in update '%s'!!!\n", path) }
 

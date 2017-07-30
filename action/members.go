@@ -7,23 +7,21 @@ import (
 	"os"
 	"bufio"
 	"strings"
-	"io"
 	"io/ioutil"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
 )
 
 type members struct {
+	util.ProcessIO
 	WithRefresh bool `short:"r" long:"refresh" description:"Exec with ignore cache."`
 	NameRequired bool `short:"n" long:"name" description:"Print name."`
 	EmailRequired bool `short:"e" long:"email" description:"Print email."`
-	writer io.Writer
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &members{ writer: os.Stdout } }, "members", "Print members.", "[OPTIONS]")
+	registProcessor(func() util.Processable { return &members{} }, "members", "Print members.", "[OPTIONS]")
 }
 
 func (self *members) Do(args []string) error {
@@ -42,7 +40,6 @@ func (self *members) Do(args []string) error {
 		if err != nil { return err }
 	}
 
-	writer := bufio.NewWriter(self.writer)
 	for _, member := range members {
 		var name string = ""
 		var email string = ""
@@ -50,9 +47,8 @@ func (self *members) Do(args []string) error {
 		if self.NameRequired { name = member.Name }
 		if self.EmailRequired { email = member.Email }
 		
-		fmt.Fprintf(writer, "%-30s%-15s%s\n", member.ScreenName, name, email)
+		self.Printf("%-30s%-15s%s\n", member.ScreenName, name, email)
 	}
-	writer.Flush()
 	
 	return nil
 }

@@ -7,6 +7,7 @@ import (
 )
 
 type unlock struct {
+	util.ProcessIO
 	pecoable
 }
 
