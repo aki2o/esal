@@ -15,7 +15,7 @@ type regist struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &regist{} }, "regist", "Regist a post.", "[OPTIONS] FILE_PATH")
+	RegistProcessor(func() util.Processable { return &regist{} }, "regist", "Regist a post.", "[OPTIONS] FILE_PATH")
 }
 
 func (self *regist) Do(args []string) error {

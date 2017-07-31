@@ -21,7 +21,7 @@ type tagStore struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &tag{} }, "tag", "Print/Add tag.", "")
+	RegistProcessor(func() util.Processable { return &tag{} }, "tag", "Print/Add tag.", "")
 }
 
 func (self *tag) Do(args []string) error {

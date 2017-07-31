@@ -13,7 +13,7 @@ type cd struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &cd{} }, "cd", "Change working category.", "[OPTIONS] CATEGORY")
+	RegistProcessor(func() util.Processable { return &cd{} }, "cd", "Change working category.", "[OPTIONS] CATEGORY")
 }
 
 func (self *cd) Do(args []string) error {

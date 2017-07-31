@@ -11,6 +11,7 @@ import (
 	"errors"
 	"reflect"
 	"encoding/base64"
+	"bytes"
 	"golang.org/x/crypto/ssh/terminal"
 	log "github.com/sirupsen/logrus"
 	"github.com/abiosoft/ishell"
@@ -176,39 +177,87 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 			PutError(err)
 			continue
 		}
-
 		if len(args) == 0 { continue }
-		if args[0] == "exit" { break }
 
-		processor_name	:= args[0]
-		processor		:= repo.GetProcessorGenerator(processor_name)()
-		if processor == nil {
-			PutError(errors.New("Unknown command!"))
-			continue
+		err = RunProcessorWithPipe(repo, args[0], args[1:])
+		if err != nil { break }
+	}
+}
+
+func RunProcessorWithPipe(repo *ProcessorRepository, first_processor_name string, args []string) error {
+	var buf *bytes.Buffer
+
+	args_list := SplitByPipe(args)
+	for idx, args := range args_list {
+		processor_name := ""
+		if idx == 0 {
+			processor_name = first_processor_name
+		} else if len(args) > 0 {
+			processor_name = args[0]
+
+			args = args[1:]
 		}
 
+		if processor_name == "" {
+			PutError(errors.New("Input is invalid!"))
+			return nil
+		}
+
+		processor_generator := repo.GetProcessorGenerator(processor_name)
+		if processor_generator == nil {
+			PutError(errors.New("Unknown command : "+processor_name))
+			return nil
+		}
+
+		processor := processor_generator()
 		parser := flags.NewParser(processor, flags.Default)
 		parser.Name = processor_name
 		parser.Usage = repo.GetUsage(processor_name)
 		
-		args, err = parser.ParseArgs(args[1:])
+		args, err := parser.ParseArgs(args)
 		if err != nil {
 			PutError(err)
-			continue
+			return nil
+		}
+
+		if idx == 0 {
+			processor.SetReader(os.Stdin)
+		} else {
+			processor.SetReader(buf)
+		}
+
+		if idx + 1 == len(args_list) {
+			// 最後のコマンドは、標準出力へ出力
+			processor.SetWriter(os.Stdout)
+		} else {
+			// 後続のコマンドがある場合は、出力をバッファに溜める
+			//
+			// NOTE:
+			//   io.Pipe() を使いたかったけど、同じ関数内で Writer/Reader を使うと
+			//   デッドロックしてしまい、それを回避する実装が思いつかなかった
+			//
+			//   http://christina04.hatenablog.com/entry/2017/01/06/190000
+			//
+			buf = new(bytes.Buffer)
+			processor.SetWriter(buf)
 		}
 
 		err = processor.Do(args)
 		if err != nil {
 			err_type := reflect.ValueOf(err)
 			switch fmt.Sprintf("%s", err_type.Type()) {
-			case "util.ProcessorHelpRequired":
+			case "*util.ProcessorExitRequired":
+				return err
+			case "*util.ProcessorHelpRequired":
 				parser.WriteHelp(os.Stderr)
 			default:
 				PutError(err)
 			}
-			continue
+			return nil
 		}
 	}
+
+	return nil
 }
 
 func SplitByPipe(args []string) [][]string {

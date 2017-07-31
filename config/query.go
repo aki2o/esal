@@ -17,7 +17,7 @@ type query struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &query{} }, "query", "Configure query.", "")
+	RegistProcessor(func() util.Processable { return &query{} }, "query", "Configure query.", "")
 }
 
 func (self *query) Do(args []string) error {

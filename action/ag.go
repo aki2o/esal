@@ -22,7 +22,7 @@ type ag struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &ag{} }, "ag", "Execute ag command.", "[OPTIONS] PATTERN [CATEGORY]")
+	RegistProcessor(func() util.Processable { return &ag{} }, "ag", "Execute ag command.", "[OPTIONS] PATTERN [CATEGORY]")
 }
 
 func (self *ag) Do(args []string) error {

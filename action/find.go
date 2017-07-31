@@ -18,7 +18,7 @@ type find struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &find{} }, "find", "Print categories and posts matches condition under CATEGORY.", "[OPTIONS] CATEGORY")
+	RegistProcessor(func() util.Processable { return &find{} }, "find", "Print categories and posts matches condition under CATEGORY.", "[OPTIONS] CATEGORY")
 }
 
 func (self *find) Do(args []string) error {

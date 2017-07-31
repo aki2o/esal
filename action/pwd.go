@@ -9,7 +9,7 @@ type pwd struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &pwd{} }, "pwd", "Print current work category.", "")
+	RegistProcessor(func() util.Processable { return &pwd{} }, "pwd", "Print current work category.", "")
 }
 
 func (self *pwd) Do(args []string) error {

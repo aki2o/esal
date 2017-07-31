@@ -23,7 +23,7 @@ type ls struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &ls{} }, "ls", "Print a list of category and post information.", "[OPTIONS]")
+	RegistProcessor(func() util.Processable { return &ls{} }, "ls", "Print a list of category and post information.", "[OPTIONS]")
 }
 
 func (self *ls) Do(args []string) error {

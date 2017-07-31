@@ -13,7 +13,7 @@ type unlock struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &unlock{} }, "unlock", "Stop to guard a post from updated by SYNC.", "[OPTIONS] POST...")
+	RegistProcessor(func() util.Processable { return &unlock{} }, "unlock", "Stop to guard a post from updated by SYNC.", "[OPTIONS] POST...")
 }
 
 func (self *unlock) Do(args []string) error {

@@ -18,7 +18,7 @@ type update struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &update{} }, "update", "Update a post.", "[OPTIONS] POST...")
+	RegistProcessor(func() util.Processable { return &update{} }, "update", "Update a post.", "[OPTIONS] POST...")
 }
 
 func (self *update) Do(args []string) error {

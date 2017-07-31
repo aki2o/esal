@@ -13,7 +13,7 @@ type mv struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &mv{} }, "mv", "Move post, category.", "POST_OR_CATEGORY... CATEGORY")
+	RegistProcessor(func() util.Processable { return &mv{} }, "mv", "Move post, category.", "POST_OR_CATEGORY... CATEGORY")
 }
 
 func (self *mv) Do(args []string) error {

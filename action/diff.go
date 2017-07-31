@@ -13,7 +13,7 @@ type diff struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &diff{} }, "diff", "Diff a post between upstream and local.", "[OPTIONS] POST...")
+	RegistProcessor(func() util.Processable { return &diff{} }, "diff", "Diff a post between upstream and local.", "[OPTIONS] POST...")
 }
 
 func (self *diff) Do(args []string) error {

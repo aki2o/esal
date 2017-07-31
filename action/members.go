@@ -21,7 +21,7 @@ type members struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &members{} }, "members", "Print members.", "[OPTIONS]")
+	RegistProcessor(func() util.Processable { return &members{} }, "members", "Print members.", "[OPTIONS]")
 }
 
 func (self *members) Do(args []string) error {

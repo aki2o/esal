@@ -10,7 +10,7 @@ type exec struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &exec{} }, "exec", "Execute os command.", "STRING")
+	RegistProcessor(func() util.Processable { return &exec{} }, "exec", "Execute os command.", "STRING")
 }
 
 func (self *exec) Do(args []string) error {

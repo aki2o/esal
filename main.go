@@ -48,6 +48,8 @@ func main() {
 				action.SetupPeco(ctx.Bool("use-peco"))
 
 				if ctx.Bool("non-interactive") {
+					action.RegistProcessor(func() util.Processable { return &action.Exit{} }, "exit", "Exit a process.", "")
+
 					util.ProcessNonInteractive("action", action.ProcessorRepository())
 				} else {
 					util.ProcessInteractive("action", action.ProcessorRepository())

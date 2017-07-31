@@ -22,7 +22,7 @@ type open struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &open{} }, "open", "Open a post.", "[OPTIONS] POST...")
+	RegistProcessor(func() util.Processable { return &open{} }, "open", "Open a post.", "[OPTIONS] POST...")
 }
 
 func (self *open) Do(args []string) error {

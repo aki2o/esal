@@ -28,7 +28,7 @@ type sync struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &sync{} }, "sync", "Fetch posts.", "[OPTIONS] QUERY_OR_POST...")
+	RegistProcessor(func() util.Processable { return &sync{} }, "sync", "Fetch posts.", "[OPTIONS] QUERY_OR_POST...")
 }
 
 func (self *sync) Do(args []string) error {

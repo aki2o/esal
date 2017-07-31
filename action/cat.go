@@ -54,7 +54,7 @@ type postProperty struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &cat{} }, "cat", "Print a post.", "[OPTIONS] POST...")
+	RegistProcessor(func() util.Processable { return &cat{} }, "cat", "Print a post.", "[OPTIONS] POST...")
 }
 
 func (self *cat) Do(args []string) error {

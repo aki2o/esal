@@ -12,7 +12,7 @@ type lock struct {
 }
 
 func init() {
-	registProcessor(func() util.Processable { return &lock{} }, "lock", "Start to guard a post from updated by SYNC.", "[OPTIONS] POST...")
+	RegistProcessor(func() util.Processable { return &lock{} }, "lock", "Start to guard a post from updated by SYNC.", "[OPTIONS] POST...")
 }
 
 func (self *lock) Do(args []string) error {
