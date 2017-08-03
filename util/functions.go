@@ -184,6 +184,31 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 	}
 }
 
+func ProcessWithFile(name string, repo *ProcessorRepository, filepath string) {
+	bytes, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		PutError(err)
+		return
+	}
+
+	for _, line := range strings.Split(string(bytes), "\n") {
+		line = strings.TrimSpace(line)
+
+		if strings.HasPrefix(line, "#") { continue }
+		if line == "" { continue }
+
+		args, err := shlex.Split(line)
+		if err != nil {
+			PutError(err)
+			return
+		}
+		if len(args) == 0 { continue }
+
+		err = RunProcessorWithPipe(repo, args[0], args[1:])
+		if err != nil { break }
+	}
+}
+
 func RunProcessorWithPipe(repo *ProcessorRepository, first_processor_name string, args []string) error {
 	var buf *bytes.Buffer
 

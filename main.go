@@ -40,18 +40,23 @@ func main() {
 			},
 			Action: func(ctx *cli.Context) error {
 				team := ctx.Args().First()
+				filepath := ctx.Args().Get(1)
 				
 				config.Load(team)
 				
 				if err := action.SetupContext(team, detectAccessToken(ctx, team), true); err != nil { panic(err) }
 
-				action.SetupPeco(ctx.Bool("use-peco"))
+				if filepath != "" {
+					action.RegistProcessor(func() util.Processable { return &action.Exit{} }, "exit", "Exit a process.", "")
 
-				if ctx.Bool("non-interactive") {
+					util.ProcessWithFile("action", action.ProcessorRepository(), filepath)
+				} else if ctx.Bool("non-interactive") {
 					action.RegistProcessor(func() util.Processable { return &action.Exit{} }, "exit", "Exit a process.", "")
 
 					util.ProcessNonInteractive("action", action.ProcessorRepository())
 				} else {
+					action.SetupPeco(ctx.Bool("use-peco"))
+
 					util.ProcessInteractive("action", action.ProcessorRepository())
 				}
 
