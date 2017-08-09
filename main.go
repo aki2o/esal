@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	fp, err := os.OpenFile("/tmp/esa.log", os.O_CREATE | os.O_TRUNC | os.O_WRONLY, 0666)
+	fp, err := os.OpenFile("/tmp/esal.log", os.O_CREATE | os.O_TRUNC | os.O_WRONLY, 0666)
 	if err != nil { panic(err) }
 	
 	log.SetFormatter(&log.JSONFormatter{})
@@ -29,13 +29,15 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name: "access-token, a",
-					Usage: "esa access_token for team",
+					Usage: "esa access_token for team.",
 				},
 				cli.BoolFlag{
 					Name: "non-interactive",
+					Usage: "Run process as not interactive shell.",
 				},
 				cli.BoolFlag{
 					Name: "use-peco",
+					Usage: "Prefer peco.",
 				},
 			},
 			Action: func(ctx *cli.Context) error {
@@ -82,7 +84,11 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name: "access-token, a",
-					Usage: "esa access_token for team",
+					Usage: "esa access_token for team.",
+				},
+				cli.BoolFlag{
+					Name: "quiet, q",
+					Usage: "Exec quietly.",
 				},
 			},
 			Action: func(ctx *cli.Context) error {
@@ -97,7 +103,10 @@ func main() {
 					ProcessorName: "sync",
 				}
 
-				adapter.Run(ctx.Args()[1:])
+				args := ctx.Args()[1:]
+				if ctx.Bool("quiet") { args = append(args, "-q") }
+				
+				adapter.Run(args)
 				return nil
 			},
 		},
@@ -107,7 +116,7 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name: "access-token, a",
-					Usage: "esa access_token for team",
+					Usage: "esa access_token for team.",
 				},
 			},
 			Action: func(ctx *cli.Context) error {
