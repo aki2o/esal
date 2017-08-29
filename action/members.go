@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"strings"
 	"io/ioutil"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/aki2o/go-esa/esa"
 	"github.com/aki2o/esal/util"
@@ -18,6 +19,8 @@ type members struct {
 	WithRefresh bool `short:"r" long:"refresh" description:"Exec with ignore cache."`
 	NameRequired bool `short:"n" long:"name" description:"Print name."`
 	EmailRequired bool `short:"e" long:"email" description:"Print email."`
+	NoScreenNameRequired bool `short:"S" long:"noscreenname" description:"Not print screen name."`
+	SelfOnly bool `short:"s" long:"self" description:"Print self only."`
 }
 
 func init() {
@@ -41,13 +44,17 @@ func (self *members) Do(args []string) error {
 	}
 
 	for _, member := range members {
+		var screen_name string = ""
 		var name string = ""
 		var email string = ""
 
-		if self.NameRequired { name = member.Name }
+		if self.SelfOnly && Context.User.ScreenName != member.ScreenName { continue }
+		
+		if ! self.NoScreenNameRequired { screen_name = fmt.Sprintf("%-30s", member.ScreenName) }
+		if self.NameRequired { name = fmt.Sprintf("%-15s", member.Name) }
 		if self.EmailRequired { email = member.Email }
 		
-		self.Printf("%-30s%-15s%s\n", member.ScreenName, name, email)
+		self.Printf("%s%s%s\n", screen_name, name, email)
 	}
 	
 	return nil
