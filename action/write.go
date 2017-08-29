@@ -67,35 +67,45 @@ func (self *write) makeBody(post_number string, write_texts []string) (string, e
 		return re.ReplaceAllString(string(body_bytes), strings.Join(write_texts, "\n")), nil
 	} else if len(self.InsertConditions) > 0 {
 		buf := new(bytes.Buffer)
-		block_beginning_re, _ := regexp.Compile("^(#|```)")
+		head_beginning_re, _ := regexp.Compile("^#+ +")
+		appended := false
 		cond_index := 0
-		checked_next_block := ""
 		
-		for _, line := range strings.Split(string(body_bytes), "\n") {
-			if checked_next_block != "" {
-				if strings.HasPrefix(line, checked_next_block) {
-					fmt.Fprint(buf, strings.Join(write_texts, "\n"))
-					checked_next_block = ""
-				}
-			} else if cond_index <= len(self.InsertConditions) {
-				if strings.HasPrefix(line, self.InsertConditions[cond_index]) {
-					cond_index = cond_index + 1
-				}
-				if cond_index > len(self.InsertConditions) {
-					checked_next_block = block_beginning_re.FindString(line)
+		for _, line := range strings.Split(string(body_bytes), "\r\n") {
+			if ! appended && head_beginning_re.MatchString(line) {
+				// まだ追加していなくて、見出し行が見つかったら、そこが追加すべき見出しかどうか判定する
+				
+				if cond_index >= len(self.InsertConditions) {
+					// 指定された条件を全てクリアしているなら、現在の見出しの前（目的の見出しの最後）に追加する
+					fmt.Fprint(buf, strings.Join(write_texts, "\r\n")+"\r\n")
+					appended = true
+				} else {
+					// まだ見つかっていない条件が残っているなら、現在の見出しとその条件がマッチするか調べる
+					curr_head := head_beginning_re.ReplaceAllString(line, "")
+					cond_head := self.InsertConditions[cond_index]
+					if curr_head == cond_head {
+						// 条件に合った見出しが見つかったので、次の条件に移る
+						cond_index = cond_index + 1
+					}
 				}
 			}
-
-			fmt.Fprintln(buf, line)
+			
+			fmt.Fprint(buf, line+"\r\n")
 		}
 
+		if ! appended && cond_index >= len(self.InsertConditions) {
+			// 指定された条件を全てクリアしているのに、まだ追加していない場合は、
+			// 目的の見出しが記事中の最後の見出しのはずなので、記事の最後に追加する
+			fmt.Fprint(buf, strings.Join(write_texts, "\r\n")+"\r\n")
+		}
+		
 		new_body_bytes, err := ioutil.ReadAll(buf)
 		if err != nil { return "", err }
 
 		return string(new_body_bytes), nil
 	} else if self.Appending {
-		return string(body_bytes)+strings.Join(write_texts, "\n"), nil
+		return string(body_bytes)+strings.Join(write_texts, "\r\n"), nil
 	} else {
-		return strings.Join(write_texts, "\n"), nil
+		return strings.Join(write_texts, "\r\n"), nil
 	}
 }
