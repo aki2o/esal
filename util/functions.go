@@ -184,14 +184,8 @@ func ProcessNonInteractive(name string, repo *ProcessorRepository) {
 	}
 }
 
-func ProcessWithFile(name string, repo *ProcessorRepository, filepath string) {
-	bytes, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		PutError(err)
-		return
-	}
-
-	for _, line := range strings.Split(string(bytes), "\n") {
+func ProcessWithString(name string, repo *ProcessorRepository, code string) {
+	for _, line := range strings.Split(code, "\n") {
 		line = strings.TrimSpace(line)
 
 		if strings.HasPrefix(line, "#") { continue }

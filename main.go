@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 	"strings"
+	"bufio"
+	"io/ioutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"github.com/aki2o/esal/util"
@@ -32,6 +34,10 @@ func main() {
 					Usage: "esa access_token for team.",
 				},
 				cli.BoolFlag{
+					Name: "exec, e",
+					Usage: "Execute the lines given as second argument or stdin.",
+				},
+				cli.BoolFlag{
 					Name: "non-interactive",
 					Usage: "Run process as not interactive shell.",
 				},
@@ -42,16 +48,32 @@ func main() {
 			},
 			Action: func(ctx *cli.Context) error {
 				team := ctx.Args().First()
-				filepath := ctx.Args().Get(1)
+				code := ""
+
+				if ctx.Bool("exec") {
+					code = ctx.Args().Get(1)
+					if code == "" {
+						scanner := bufio.NewScanner(os.Stdin)
+						scanner.Scan()
+						code = scanner.Text()
+					}
+				} else {
+					bytes, err := ioutil.ReadFile(ctx.Args().Get(1))
+					if err != nil {
+						util.PutError(err)
+						return nil
+					}
+					code = string(bytes)
+				}
 				
 				config.Load(team)
 				
 				if err := action.SetupContext(team, detectAccessToken(ctx, team), true); err != nil { panic(err) }
 
-				if filepath != "" {
+				if code != "" {
 					action.RegistProcessor(func() util.Processable { return &action.Exit{} }, "exit", "Exit a process.", "")
 
-					util.ProcessWithFile("action", action.ProcessorRepository(), filepath)
+					util.ProcessWithString("action", action.ProcessorRepository(), code)
 				} else if ctx.Bool("non-interactive") {
 					action.RegistProcessor(func() util.Processable { return &action.Exit{} }, "exit", "Exit a process.", "")
 
