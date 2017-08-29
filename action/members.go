@@ -33,7 +33,7 @@ func (self *members) Do(args []string) error {
 
 	if self.WithRefresh || len(members) == 0 {
 		if self.WithRefresh {
-			err = os.Remove(self.GetLocalStragePath())
+			err = os.RemoveAll(self.GetLocalStragePath())
 			if err != nil { return err }
 		}
 		
