@@ -48,17 +48,18 @@ func main() {
 			},
 			Action: func(ctx *cli.Context) error {
 				team := ctx.Args().First()
+				arg1 := ctx.Args().Get(1)
 				code := ""
 
 				if ctx.Bool("exec") {
-					code = ctx.Args().Get(1)
+					code = arg1
 					if code == "" {
 						scanner := bufio.NewScanner(os.Stdin)
 						scanner.Scan()
 						code = scanner.Text()
 					}
-				} else {
-					bytes, err := ioutil.ReadFile(ctx.Args().Get(1))
+				} else if arg1 != "" {
+					bytes, err := ioutil.ReadFile(arg1)
 					if err != nil {
 						util.PutError(err)
 						return nil
