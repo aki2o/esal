@@ -71,7 +71,7 @@ func (self *write) makeBody(post_number string, write_texts []string) (string, e
 		appended := false
 		cond_index := 0
 		
-		for _, line := range strings.Split(string(body_bytes), "\r\n") {
+		for index, line := range strings.Split(string(body_bytes), "\r\n") {
 			if ! appended && head_beginning_re.MatchString(line) {
 				// まだ追加していなくて、見出し行が見つかったら、そこが追加すべき見出しかどうか判定する
 				
@@ -89,8 +89,9 @@ func (self *write) makeBody(post_number string, write_texts []string) (string, e
 					}
 				}
 			}
-			
-			fmt.Fprint(buf, line+"\r\n")
+
+			if index > 0 { fmt.Fprint(buf, "\r\n") }
+			fmt.Fprint(buf, line)
 		}
 
 		if ! appended && cond_index >= len(self.InsertConditions) {
