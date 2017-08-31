@@ -67,25 +67,34 @@ func (self *write) makeBody(post_number string, write_texts []string) (string, e
 		return re.ReplaceAllString(string(body_bytes), strings.Join(write_texts, "\n")), nil
 	} else if len(self.InsertConditions) > 0 {
 		buf := new(bytes.Buffer)
-		head_beginning_re, _ := regexp.Compile("^#+ +")
+		head_beginning_re, _ := regexp.Compile("^(#+) +")
 		appended := false
 		cond_index := 0
+		head_level := 0
 		
 		for index, line := range strings.Split(string(body_bytes), "\r\n") {
 			if ! appended && head_beginning_re.MatchString(line) {
 				// まだ追加していなくて、見出し行が見つかったら、そこが追加すべき見出しかどうか判定する
-				
+				curr_head_level := len(head_beginning_re.FindAllStringSubmatch(line, 1)[0][1])
+					
 				if cond_index >= len(self.InsertConditions) {
-					// 指定された条件を全てクリアしているなら、現在の見出しの前（目的の見出しの最後）に追加する
-					fmt.Fprint(buf, strings.Join(write_texts, "\r\n")+"\r\n")
-					appended = true
-				} else {
-					// まだ見つかっていない条件が残っているなら、現在の見出しとその条件がマッチするか調べる
+					// 指定された条件を全てクリアしている場合
+					if curr_head_level <= head_level {
+						// 最後の条件にマッチした見出しレベルと同じか小さいレベルの見出しだったら、
+						// 現在の見出しの前（目的の見出しの最後）に追加する
+						fmt.Fprint(buf, strings.Join(write_texts, "\r\n")+"\r\n")
+						appended = true
+					}
+				} else if curr_head_level > head_level {
+					// まだ見つかっていない条件が残っていて、前回条件にマッチした見出しレベルより大きいレベルの見出しだったら、
+					// 現在の見出しとその条件がマッチするか調べる
 					curr_head := head_beginning_re.ReplaceAllString(line, "")
 					cond_head := self.InsertConditions[cond_index]
 					if curr_head == cond_head {
 						// 条件に合った見出しが見つかったので、次の条件に移る
 						cond_index = cond_index + 1
+						// 最後に条件に合った見出しレベルを更新する
+						head_level = curr_head_level
 					}
 				}
 			}
