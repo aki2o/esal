@@ -1,0 +1,19 @@
+package: github.com/aki2o/esal
+import:
+- package: github.com/abiosoft/ishell
+- package: github.com/aki2o/go-esa
+  subpackages:
+  - esa
+- package: github.com/flynn-archive/go-shlex
+- package: github.com/jessevdk/go-flags
+- package: github.com/nsf/termbox-go
+- package: github.com/peco/peco
+- package: github.com/sergi/go-diff
+  subpackages:
+  - diffmatchpatch
+- package: github.com/sirupsen/logrus
+- package: github.com/urfave/cli
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh/terminal
+- package: gopkg.in/cheggaaa/pb.v1

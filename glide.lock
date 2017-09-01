@@ -1,0 +1,68 @@
+hash: 66b909b342bc982ff71ea1d011f6edd83d1f2721b0606285290cf326bf3fdf56
+updated: 2017-09-01T21:42:33.72257311+09:00
+imports:
+- name: github.com/abiosoft/ishell
+  version: 1fe4da16846908f352ed09310705a9c84f4b9f97
+- name: github.com/aki2o/go-esa
+  version: b989405b568d50da1b09cb5cea542cf9244b27d2
+  subpackages:
+  - esa
+- name: github.com/chzyer/readline
+  version: 41eea22f717c616615e1e59aa06cf831f9901f35
+- name: github.com/davecgh/go-spew
+  version: a476722483882dd40b8111f0eb64e1d7f43f56e4
+  subpackages:
+  - spew
+- name: github.com/fatih/color
+  version: 67c513e5729f918f5e69786686770c27141a4490
+- name: github.com/flynn-archive/go-shlex
+  version: 3f9db97f856818214da2e1057f8ad84803971cff
+- name: github.com/google/btree
+  version: 316fb6d3f031ae8f4d457c6c5186b9e3ded70435
+- name: github.com/jessevdk/go-flags
+  version: 6cf8f02b4ae8ba723ddc64dcfd403e530c06d927
+- name: github.com/lestrrat/go-pdebug
+  version: 2e6eaaa5717f81bda41d27070d3c966f40a1e75f
+- name: github.com/mattn/go-colorable
+  version: 5411d3eea5978e6cdc258b30de592b60df6aba96
+  repo: https://github.com/mattn/go-colorable
+- name: github.com/mattn/go-isatty
+  version: 57fdcb988a5c543893cc61bce354a6e24ab70022
+  repo: https://github.com/mattn/go-isatty
+- name: github.com/mattn/go-runewidth
+  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
+- name: github.com/nsf/termbox-go
+  version: 4ed959e0540971545eddb8c75514973d670cf739
+- name: github.com/peco/peco
+  version: 7b7749376ff732b10c2a2f70252dad41081ca23a
+  subpackages:
+  - filter
+  - hub
+  - internal/buffer
+  - internal/keyseq
+  - internal/util
+  - line
+  - pipeline
+  - sig
+- name: github.com/pkg/errors
+  version: c605e284fe17294bda444b34710735b29d1a9d90
+- name: github.com/sergi/go-diff
+  version: feef008d51ad2b3778f85d387ccf91735543008d
+  subpackages:
+  - diffmatchpatch
+- name: github.com/sirupsen/logrus
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+- name: github.com/urfave/cli
+  version: f017f86fccc5a039a98f23311f34fdf78b014f78
+- name: golang.org/x/crypto
+  version: 81e90905daefcd6fd217b62423c0908922eadb30
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: e24f485414aeafb646f6fca458b0bf869c0880a1
+  subpackages:
+  - unix
+  - windows
+- name: gopkg.in/cheggaaa/pb.v1
+  version: 657164d0228d6bebe316fdf725c69f131a50fb10
+testImports: []
