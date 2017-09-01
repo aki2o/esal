@@ -2,6 +2,9 @@ package: github.com/aki2o/esal
 import:
 - package: github.com/abiosoft/ishell
 - package: github.com/aki2o/go-esa
+  vcs: git
+  repo: https://github.com/aki2o/go-esa.git
+  version: not_merged_feature
   subpackages:
   - esa
 - package: github.com/flynn-archive/go-shlex

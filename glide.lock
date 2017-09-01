@@ -1,10 +1,12 @@
-hash: 66b909b342bc982ff71ea1d011f6edd83d1f2721b0606285290cf326bf3fdf56
-updated: 2017-09-01T21:42:33.72257311+09:00
+hash: 2f9557957bc64d040b8d436adbbc75e704567279504b681dbb9fd42a381cc3c1
+updated: 2017-09-01T22:01:39.085597379+09:00
 imports:
 - name: github.com/abiosoft/ishell
   version: 1fe4da16846908f352ed09310705a9c84f4b9f97
 - name: github.com/aki2o/go-esa
-  version: b989405b568d50da1b09cb5cea542cf9244b27d2
+  version: dc931f81b46e61ad14b03863b814655b97359fdb
+  repo: https://github.com/aki2o/go-esa.git
+  vcs: git
   subpackages:
   - esa
 - name: github.com/chzyer/readline
