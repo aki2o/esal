@@ -235,7 +235,6 @@ func RunProcessorWithPipe(repo *ProcessorRepository, first_processor_name string
 		
 		args, err := parser.ParseArgs(args)
 		if err != nil {
-			PutError(err)
 			return nil
 		}
 
