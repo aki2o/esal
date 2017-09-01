@@ -82,6 +82,7 @@ func (self *write) makeBody(post_number string, write_texts []string) (string, e
 					if curr_head_level <= head_level {
 						// 最後の条件にマッチした見出しレベルと同じか小さいレベルの見出しだったら、
 						// 現在の見出しの前（目的の見出しの最後）に追加する
+						if index > 0 { fmt.Fprint(buf, "\r\n") }
 						fmt.Fprint(buf, strings.Join(write_texts, "\r\n")+"\r\n")
 						appended = true
 					}
