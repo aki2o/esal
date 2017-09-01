@@ -133,31 +133,6 @@ func main() {
 				return nil
 			},
 		},
-		{
-			Name: "members",
-			Usage: "Print members.",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name: "access-token, a",
-					Usage: "esa access_token for team.",
-				},
-			},
-			Action: func(ctx *cli.Context) error {
-				team := ctx.Args().First()
-				
-				config.Load(team)
-				
-				if err := action.SetupContext(team, detectAccessToken(ctx, team), false); err != nil { panic(err) }
-
-				adapter := &util.IshellAdapter{
-					ProcessorRepository: action.ProcessorRepository(),
-					ProcessorName: "members",
-				}
-
-				adapter.Run(ctx.Args()[1:])
-				return nil
-			},
-		},
 	}
 	
 	app.Run(os.Args)
