@@ -157,7 +157,7 @@ func ProcessInteractive(name string, repo *ProcessorRepository) {
 
 		shell.AddCmd(&ishell.Cmd{
 			Name: processor_name,
-			// Help: fmt.Sprintf("%s\nUsage:\n  %s %s\n", description, processor_name, usage),
+			Help: repo.GetDescription(processor_name),
 			Func: adapter.Adapt,
 		})
 	}
