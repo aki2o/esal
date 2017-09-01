@@ -101,38 +101,6 @@ func main() {
 				return nil
 			},
 		},
-		{
-			Name: "sync",
-			Usage: "Synchronize posts.",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name: "access-token, a",
-					Usage: "esa access_token for team.",
-				},
-				cli.BoolFlag{
-					Name: "quiet, q",
-					Usage: "Exec quietly.",
-				},
-			},
-			Action: func(ctx *cli.Context) error {
-				team := ctx.Args().First()
-				
-				config.Load(team)
-				
-				if err := action.SetupContext(team, detectAccessToken(ctx, team), false); err != nil { panic(err) }
-
-				adapter := &util.IshellAdapter{
-					ProcessorRepository: action.ProcessorRepository(),
-					ProcessorName: "sync",
-				}
-
-				args := ctx.Args()[1:]
-				if ctx.Bool("quiet") { args = append(args, "-q") }
-				
-				adapter.Run(args)
-				return nil
-			},
-		},
 	}
 	
 	app.Run(os.Args)

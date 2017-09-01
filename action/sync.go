@@ -8,6 +8,7 @@ import (
 	"os"
 	"io"
 	"strings"
+	"errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/cheggaaa/pb.v1"
 	"github.com/aki2o/esal/util"
@@ -17,7 +18,7 @@ import (
 type sync struct {
 	util.ProcessIO
 	pecoable
-	// AllRequired bool `short:"a" long:"all" description:"Exec for all queries."`
+	AllRequired bool `short:"a" long:"all" description:"Exec for all queries."`
 	Force bool `short:"f" long:"force" description:"Exec with ignore last synchronized time."`
 	ByNumber bool `short:"n" long:"number" description:"Exec for only posts of numbers given as arguments."`
 	Quiet bool `short:"q" long:"quiet" description:"Exec quietly."`
@@ -31,22 +32,21 @@ func init() {
 }
 
 func (self *sync) Do(args []string) error {
-	// if len(args) == 0 && ! self.AllRequired && self.PecoRequired() {
-	// 	var err error
-	// 	if self.ByNumber {
-	// 		args, err = selectNodeByPeco("", false)
-	// 	} else {
-	// 		args, err = self.selectQuery()
-	// 	}
-	// 	if err != nil { return err }
-	// }
+	if len(args) == 0 && ! self.AllRequired && self.PecoRequired() {
+		var err error
+		if self.ByNumber {
+			args, err = selectNodeByPeco("", false)
+		} else {
+			args, err = self.selectQuery()
+		}
+		if err != nil { return err }
+	}
 	
-	// if len(args) == 0 && !self.AllRequired {
-	// 	return errors.New("Require query name!")
-	// }
-	if len(args) == 0 && !self.ByNumber {
-		for _, query := range config.Team.Queries {
-			args = append(args, query.Name)
+	if len(args) == 0 && !self.AllRequired {
+		if self.ByNumber {
+			return errors.New("Require post number!")
+		} else {
+			return errors.New("Require query name!")
 		}
 	}
 	
@@ -137,7 +137,7 @@ func (self *sync) DoByQuery(args []string) error {
 }
 
 func (self *sync) isTarget(query config.Query, args []string) bool {
-	// if self.AllRequired { return true }
+	if self.AllRequired { return true }
 	
 	for _, query_name := range args {
 		if query_name == query.Name {
