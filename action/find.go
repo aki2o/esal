@@ -29,15 +29,16 @@ func (self *find) Do(args []string) error {
 		return errors.New("Require category!")
 	}
 	
-	found_paths, err := self.collectNodesIn(path)
+	found_paths, _, err := self.collectNodesIn(path)
 	if err != nil { return err }
 	
 	self.Println(strings.Join(found_paths, "\n"))
 	return nil
 }
 
-func (self *find) collectNodesIn(path string) ([]string, error) {
-	founds := []string{}
+func (self *find) collectNodesIn(path string) ([]string, []*esa.PostResponse, error) {
+	found_paths := []string{}
+	found_posts := []*esa.PostResponse{}
 	physical_path := PhysicalPathOf(path)
 	path = DirectoryFormat(path)
 
@@ -49,13 +50,14 @@ func (self *find) collectNodesIn(path string) ([]string, error) {
 			node_path := path+decoded_name
 
 			if self.matchCategory(decoded_name) {
-				founds = append(founds, node_path+"/")
+				found_paths = append(found_paths, node_path+"/")
 			}
 
-			found_paths, err := self.collectNodesIn(node_path)
-			if err != nil { return []string{}, err }
+			found_child_paths, found_child_posts, err := self.collectNodesIn(node_path)
+			if err != nil { return []string{}, []*esa.PostResponse{}, err }
 			
-			founds = append(founds, found_paths...)
+			found_paths = append(found_paths, found_child_paths...)
+			found_posts = append(found_posts, found_child_posts...)
 		} else {
 			var post esa.PostResponse
 
@@ -70,10 +72,11 @@ func (self *find) collectNodesIn(path string) ([]string, error) {
 			}
 
 			if self.matchPost(&post) {
-				founds = append(founds, fmt.Sprintf("%s%s: %s", path, post_number, post.Name))
+				found_paths = append(found_paths, fmt.Sprintf("%s%s: %s", path, post_number, post.Name))
+				found_posts = append(found_posts, &post)
 			}
 		}
 	}
 
-	return founds, nil
+	return found_paths, found_posts, nil
 }

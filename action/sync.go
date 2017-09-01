@@ -73,7 +73,7 @@ func (self *sync) Do(args []string) error {
 func(self *sync) Refresh(path string) error {
 	find_process := &find{}
 	find_process.Type = "u"
-	node_paths, err := find_process.collectNodesIn(path)
+	node_paths, _, err := find_process.collectNodesIn(path)
 	if err != nil { return err }
 
 	for _, node_path := range node_paths {
