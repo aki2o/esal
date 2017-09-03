@@ -30,10 +30,20 @@ func (self *tag) Do(args []string) error {
 	if len(args) > 0 { action_name = args[0] }
 
 	switch action_name {
-	case "list":	return self.PrintTags()
-	case "add":		return self.AddTags(args[1:])
-	// case "remove":	return self.RemoveTags(args[1:])
-	default:		return errors.New("Unknown action!")
+	case "list":
+		return self.PrintTags()
+	case "add":
+		tags := args[1:]
+		if len(tags) == 0 { tags = self.ScanArgs() }
+
+		return self.AddTags(tags)
+	// case "remove":
+	// 	tags := args[1:]
+	// 	if len(tags) == 0 { tags = self.ScanArgs() }
+
+	// 	return self.RemoveTags(tags)
+	default:
+		return errors.New("Unknown action!")
 	}
 }
 
@@ -46,8 +56,6 @@ func (self *tag) PrintTags() error {
 }
 
 func (self *tag) AddTags(tags []string) error {
-	if len(tags) == 0 { tags = self.ScanArgs() }
-
 	current_tags, err := self.load()
 	if err != nil { return err }
 
