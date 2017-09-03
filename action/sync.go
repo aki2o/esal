@@ -32,6 +32,8 @@ func init() {
 }
 
 func (self *sync) Do(args []string) error {
+	if len(args) == 0 { args = self.ScanArgs() }
+
 	if len(args) == 0 && ! self.AllRequired && self.PecoRequired() {
 		var err error
 		if self.ByNumber {
