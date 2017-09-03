@@ -47,7 +47,10 @@ func (self *write) process(path string, write_texts []string) error {
 	lock_process := &lock{}
 	if err := lock_process.Do([]string{ path }); err != nil { return err }
 
-	new_body, err := self.makeBody(post_number, write_texts)
+	body_bytes, err := LoadPostBody(post_number)
+	if err != nil { return err }
+
+	new_body, err := self.makeBody(string(body_bytes), write_texts)
 	if err != nil { return err }
 
 	err = util.CreateFile(GetPostBodyPath(post_number), new_body)
@@ -56,15 +59,12 @@ func (self *write) process(path string, write_texts []string) error {
 	return nil
 }
 
-func (self *write) makeBody(post_number string, write_texts []string) (string, error) {
-	body_bytes, err := LoadPostBody(post_number)
-	if err != nil { return "", err }
-
+func (self *write) makeBody(body string, write_texts []string) (string, error) {
 	if self.ReplaceRegexp != "" {
 		re, err := regexp.Compile(self.ReplaceRegexp)
 		if err != nil { return "", err }
 
-		return re.ReplaceAllString(string(body_bytes), strings.Join(write_texts, "\n")), nil
+		return re.ReplaceAllString(body, strings.Join(write_texts, "\r\n")), nil
 	} else if len(self.InsertConditions) > 0 {
 		buf := new(bytes.Buffer)
 		head_beginning_re, _ := regexp.Compile("^(#+) +")
@@ -72,7 +72,7 @@ func (self *write) makeBody(post_number string, write_texts []string) (string, e
 		cond_index := 0
 		head_level := 0
 		
-		for index, line := range strings.Split(string(body_bytes), "\r\n") {
+		for index, line := range strings.Split(body, "\r\n") {
 			if ! appended && head_beginning_re.MatchString(line) {
 				// まだ追加していなくて、見出し行が見つかったら、そこが追加すべき見出しかどうか判定する
 				curr_head_level := len(head_beginning_re.FindAllStringSubmatch(line, 1)[0][1])
@@ -83,7 +83,7 @@ func (self *write) makeBody(post_number string, write_texts []string) (string, e
 						// 最後の条件にマッチした見出しレベルと同じか小さいレベルの見出しだったら、
 						// 現在の見出しの前（目的の見出しの最後）に追加する
 						if index > 0 { fmt.Fprint(buf, "\r\n") }
-						fmt.Fprint(buf, strings.Join(write_texts, "\r\n")+"\r\n")
+						fmt.Fprint(buf, strings.Join(write_texts, "\r\n"))
 						appended = true
 					}
 				} else if curr_head_level > head_level {
@@ -107,7 +107,7 @@ func (self *write) makeBody(post_number string, write_texts []string) (string, e
 		if ! appended && cond_index >= len(self.InsertConditions) {
 			// 指定された条件を全てクリアしているのに、まだ追加していない場合は、
 			// 目的の見出しが記事中の最後の見出しのはずなので、記事の最後に追加する
-			fmt.Fprint(buf, strings.Join(write_texts, "\r\n")+"\r\n")
+			fmt.Fprint(buf, "\r\n"+strings.Join(write_texts, "\r\n"))
 		}
 		
 		new_body_bytes, err := ioutil.ReadAll(buf)
@@ -115,7 +115,7 @@ func (self *write) makeBody(post_number string, write_texts []string) (string, e
 
 		return string(new_body_bytes), nil
 	} else if self.Appending {
-		return string(body_bytes)+strings.Join(write_texts, "\r\n"), nil
+		return body+strings.Join(write_texts, "\r\n"), nil
 	} else {
 		return strings.Join(write_texts, "\r\n"), nil
 	}
